@@ -1,8 +1,8 @@
 {
-  "last_fetch": "2025-09-06T12:27:59.906904",
+  "last_fetch": "2025-09-06T06:40:28.560353",
   "_metadata": {
-    "updated_at": "2025-09-06T12:27:59.907075",
-    "run_id": "actions-dev-20250906-122732",
+    "updated_at": "2025-09-06T06:40:28.560493",
+    "run_id": "17511250715",
     "connector": "bank-of-canada"
   }
 }
