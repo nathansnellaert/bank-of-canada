@@ -5,10 +5,28 @@ from datetime import datetime
 from utils.http_client import get
 from utils.io import load_state, save_state
 
+def convert_quarterly_to_iso(date_str: str) -> str:
+    """Convert quarterly date format to ISO date format for API calls.
+    
+    Examples:
+        2025Q1 -> 2025-01-01
+        2025Q2 -> 2025-04-01
+        2025Q3 -> 2025-07-01
+        2025Q4 -> 2025-10-01
+    """
+    if 'Q' in date_str:
+        year, quarter = date_str.split('Q')
+        quarter_to_month = {'1': '01', '2': '04', '3': '07', '4': '10'}
+        month = quarter_to_month.get(quarter, '01')
+        return f"{year}-{month}-01"
+    return date_str
+
 def fetch_series_data(series_code: str, start_date: str) -> list:
     """Fetch data for a specific series"""
     url = f"https://www.bankofcanada.ca/valet/observations/{series_code}/csv"
-    params = {"start_date": start_date}
+    # Convert quarterly date format to ISO format if needed
+    api_start_date = convert_quarterly_to_iso(start_date)
+    params = {"start_date": api_start_date}
     
     response = get(url, params=params, timeout=30.0)
     response.raise_for_status()
