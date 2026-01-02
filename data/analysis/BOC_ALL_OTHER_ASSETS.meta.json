@@ -1,0 +1,109 @@
+{
+  "meta": {
+    "asset_name": "BOC_ALL_OTHER_ASSETS",
+    "source_path": "/Users/nathansnellaert/Documents/data-integrations/integrations/bank-of-canada/data/raw/series/BOC_ALL_OTHER_ASSETS.json",
+    "source_size_bytes": 33494,
+    "detected_format": "json",
+    "structure": "array",
+    "root_key_path": null,
+    "record_count": 227,
+    "is_compressed": false,
+    "last_processed": "2025-12-27T16:51:31.973572",
+    "error": null
+  },
+  "schema": {
+    "rows": 227,
+    "columns": {
+      "date": {
+        "type": "timestamp[us]",
+        "unique": 227,
+        "cardinality": 1.0,
+        "samples": [
+          "2007-01-01 00:00:00",
+          "2007-02-01 00:00:00",
+          "2007-03-01 00:00:00",
+          "2007-04-01 00:00:00",
+          "2007-05-01 00:00:00"
+        ]
+      },
+      "series_code": {
+        "type": "string",
+        "unique": 1,
+        "cardinality": 0.004,
+        "min_len": 20,
+        "max_len": 20,
+        "samples": [
+          "BOC_ALL_OTHER_ASSETS"
+        ],
+        "issues": [
+          {
+            "type": "single_value",
+            "message": "All 227 rows have same value",
+            "value": "BOC_ALL_OTHER_ASSETS"
+          }
+        ]
+      },
+      "value": {
+        "type": "string",
+        "unique": 196,
+        "cardinality": 0.863,
+        "min_len": 3,
+        "max_len": 4,
+        "samples": [
+          "260",
+          "277",
+          "256",
+          "333",
+          "636"
+        ],
+        "issues": [
+          {
+            "type": "numeric_as_string",
+            "message": "Column contains numbers stored as strings",
+            "example": "277"
+          }
+        ]
+      },
+      "series_label": {
+        "type": "string",
+        "unique": 1,
+        "cardinality": 0.004,
+        "min_len": 16,
+        "max_len": 16,
+        "samples": [
+          "All other assets"
+        ],
+        "issues": [
+          {
+            "type": "single_value",
+            "message": "All 227 rows have same value",
+            "value": "All other assets"
+          }
+        ]
+      },
+      "series_description": {
+        "type": "string",
+        "unique": 1,
+        "cardinality": 0.004,
+        "min_len": 6,
+        "max_len": 6,
+        "samples": [
+          "Assets"
+        ],
+        "issues": [
+          {
+            "type": "single_value",
+            "message": "All 227 rows have same value",
+            "value": "Assets"
+          }
+        ]
+      }
+    }
+  },
+  "issues": [
+    "series_code: All 227 rows have same value",
+    "value: Column contains numbers stored as strings",
+    "series_label: All 227 rows have same value",
+    "series_description: All 227 rows have same value"
+  ]
+}

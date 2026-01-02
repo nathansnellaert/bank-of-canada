@@ -1,0 +1,109 @@
+{
+  "meta": {
+    "asset_name": "BD.CDN.7YR.DQ.YLD",
+    "source_path": "/Users/nathansnellaert/Documents/data-integrations/integrations/bank-of-canada/data/raw/series/BD.CDN.7YR.DQ.YLD.json",
+    "source_size_bytes": 1068066,
+    "detected_format": "json",
+    "structure": "array",
+    "root_key_path": null,
+    "record_count": 6246,
+    "is_compressed": false,
+    "last_processed": "2025-12-27T16:51:25.987976",
+    "error": null
+  },
+  "schema": {
+    "rows": 6246,
+    "columns": {
+      "date": {
+        "type": "timestamp[us]",
+        "unique": 6246,
+        "cardinality": 1.0,
+        "samples": [
+          "2001-01-02 00:00:00",
+          "2001-01-03 00:00:00",
+          "2001-01-04 00:00:00",
+          "2001-01-05 00:00:00",
+          "2001-01-08 00:00:00"
+        ]
+      },
+      "series_code": {
+        "type": "string",
+        "unique": 1,
+        "cardinality": 0.0,
+        "min_len": 17,
+        "max_len": 17,
+        "samples": [
+          "BD.CDN.7YR.DQ.YLD"
+        ],
+        "issues": [
+          {
+            "type": "single_value",
+            "message": "All 6246 rows have same value",
+            "value": "BD.CDN.7YR.DQ.YLD"
+          }
+        ]
+      },
+      "value": {
+        "type": "string",
+        "unique": 548,
+        "cardinality": 0.088,
+        "min_len": 4,
+        "max_len": 4,
+        "samples": [
+          "2.88",
+          "1.69",
+          "1.68",
+          "2.87",
+          "1.67"
+        ],
+        "issues": [
+          {
+            "type": "numeric_as_string",
+            "message": "Column contains numbers stored as strings",
+            "example": "5.23"
+          }
+        ]
+      },
+      "series_label": {
+        "type": "string",
+        "unique": 1,
+        "cardinality": 0.0,
+        "min_len": 6,
+        "max_len": 6,
+        "samples": [
+          "7 year"
+        ],
+        "issues": [
+          {
+            "type": "single_value",
+            "message": "All 6246 rows have same value",
+            "value": "7 year"
+          }
+        ]
+      },
+      "series_description": {
+        "type": "string",
+        "unique": 1,
+        "cardinality": 0.0,
+        "min_len": 42,
+        "max_len": 42,
+        "samples": [
+          "Government of Canada benchmark bond yields"
+        ],
+        "issues": [
+          {
+            "type": "single_value",
+            "message": "All 6246 rows have same value",
+            "value": "Government of Canada benchmark bond yields"
+          }
+        ]
+      }
+    }
+  },
+  "issues": [
+    "series_code: All 6246 rows have same value",
+    "value: Column contains numbers stored as strings",
+    "series_label: All 6246 rows have same value",
+    "series_description: All 6246 rows have same value"
+  ]
+}

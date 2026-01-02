@@ -1,0 +1,700 @@
+{
+  "_meta": {
+    "description": "Bank of Canada dataset mapping configuration",
+    "version": "3.0",
+    "format": "wide",
+    "notes": "Each dataset becomes a wide table with date as index and series as columns. Description field provides context for LLM queries.",
+    "coverage_summary": {
+      "total_raw_series": 6995,
+      "mapped_series": "~800",
+      "excluded_series": "~6000 (research papers, chart data, legacy, detailed distributions)",
+      "rationale": "Focus on continuously updated, policy-relevant time series. Exclude one-off publications and granular distributions."
+    }
+  },
+
+  "datasets": {
+
+    "exchange_rates_daily": {
+      "title": "Bank of Canada: Daily Exchange Rates",
+      "description": "Bank of Canada daily indicative foreign exchange rates for Canadian dollar (CAD) against 26 major world currencies, updated each business day around 16:30 ET.",
+      "frequency": "daily",
+      "series": {
+        "FXUSDCAD": {"column": "usd_cad", "description": "US dollars per 1 Canadian dollar - the most traded CAD currency pair"},
+        "FXEURCAD": {"column": "eur_cad", "description": "Euros per 1 Canadian dollar - key European trading partner rate"},
+        "FXGBPCAD": {"column": "gbp_cad", "description": "British pounds per 1 Canadian dollar"},
+        "FXJPYCAD": {"column": "jpy_cad", "description": "Japanese yen per 1 Canadian dollar"},
+        "FXCHFCAD": {"column": "chf_cad", "description": "Swiss francs per 1 Canadian dollar - traditional safe haven currency"},
+        "FXAUDCAD": {"column": "aud_cad", "description": "Australian dollars per 1 CAD - fellow commodity currency"},
+        "FXNZDCAD": {"column": "nzd_cad", "description": "New Zealand dollars per 1 Canadian dollar"},
+        "FXCNYCAD": {"column": "cny_cad", "description": "Chinese yuan per 1 CAD - China is Canada's 2nd largest trading partner"},
+        "FXHKDCAD": {"column": "hkd_cad", "description": "Hong Kong dollars per 1 Canadian dollar"},
+        "FXKRWCAD": {"column": "krw_cad", "description": "South Korean won per 1 Canadian dollar"},
+        "FXSGDCAD": {"column": "sgd_cad", "description": "Singapore dollars per 1 Canadian dollar"},
+        "FXINRCAD": {"column": "inr_cad", "description": "Indian rupees per 1 Canadian dollar"},
+        "FXMXNCAD": {"column": "mxn_cad", "description": "Mexican pesos per 1 CAD - USMCA trading partner"},
+        "FXBRLCAD": {"column": "brl_cad", "description": "Brazilian reais per 1 Canadian dollar"},
+        "FXZARCAD": {"column": "zar_cad", "description": "South African rand per 1 Canadian dollar"},
+        "FXSEKCAD": {"column": "sek_cad", "description": "Swedish kronor per 1 Canadian dollar"},
+        "FXNOKCAD": {"column": "nok_cad", "description": "Norwegian kroner per 1 CAD - fellow oil-exporting nation"},
+        "FXTRYCAD": {"column": "try_cad", "description": "Turkish lira per 1 Canadian dollar"},
+        "FXRUBCAD": {"column": "rub_cad", "description": "Russian rubles per 1 Canadian dollar"},
+        "FXSARCAD": {"column": "sar_cad", "description": "Saudi riyals per 1 CAD - pegged to USD"},
+        "FXIDRCAD": {"column": "idr_cad", "description": "Indonesian rupiah per 1 Canadian dollar"},
+        "FXTWDCAD": {"column": "twd_cad", "description": "Taiwan dollars per 1 Canadian dollar"},
+        "FXPENCAD": {"column": "pen_cad", "description": "Peruvian soles per 1 Canadian dollar"},
+        "FXCADUSD": {"column": "cad_usd", "description": "Canadian dollars per 1 US dollar - inverse of usd_cad"},
+        "FXCADEUR": {"column": "cad_eur", "description": "Canadian dollars per 1 Euro"},
+        "FXCADGBP": {"column": "cad_gbp", "description": "Canadian dollars per 1 British pound"}
+      }
+    },
+
+    "effective_exchange_rate": {
+      "title": "Bank of Canada: Canadian Effective Exchange Rate Index (CEER)",
+      "description": "Bank of Canada trade-weighted index measuring the Canadian dollar against a basket of currencies. A higher CEER means CAD has appreciated relative to trading partners.",
+      "frequency": "daily",
+      "series": {
+        "CEER_BROAD_D_N": {"column": "ceer_broad_nominal_daily", "description": "Daily nominal CEER against all trading partners weighted by bilateral trade"},
+        "CEER_NARROW_D_N": {"column": "ceer_narrow_nominal_daily", "description": "Daily nominal CEER against major currencies only (USD, EUR, JPY, GBP, etc.)"},
+        "CEER_XUS_D_N": {"column": "ceer_ex_us_nominal_daily", "description": "Daily nominal CEER excluding US dollar - useful for non-US trade analysis"},
+        "CEER_BROAD_M_N": {"column": "ceer_broad_nominal_monthly", "description": "Monthly average nominal CEER against all trading partners"},
+        "CEER_BROAD_M_R": {"column": "ceer_broad_real_monthly", "description": "Monthly real CEER adjusted for inflation differentials between Canada and partners"},
+        "CEER_NARROW_M_R": {"column": "ceer_narrow_real_monthly", "description": "Monthly real CEER against major currencies, inflation-adjusted"},
+        "CEER_XUS_M_R": {"column": "ceer_ex_us_real_monthly", "description": "Monthly real CEER excluding USD, shows competitiveness vs non-US partners"}
+      }
+    },
+
+    "bond_yields_daily": {
+      "title": "Bank of Canada: Government of Canada Bond Yields",
+      "description": "Bank of Canada daily benchmark yields for Government of Canada bonds across the maturity spectrum. These are risk-free rates that form the foundation for Canadian interest rates.",
+      "frequency": "daily",
+      "series": {
+        "BD.CDN.2YR.DQ.YLD": {"column": "yield_2yr", "description": "2-year GoC bond yield - sensitive to near-term Bank of Canada policy expectations"},
+        "BD.CDN.3YR.DQ.YLD": {"column": "yield_3yr", "description": "3-year GoC bond yield"},
+        "BD.CDN.5YR.DQ.YLD": {"column": "yield_5yr", "description": "5-year GoC bond yield - benchmark for fixed mortgage rates in Canada"},
+        "BD.CDN.7YR.DQ.YLD": {"column": "yield_7yr", "description": "7-year GoC bond yield"},
+        "BD.CDN.10YR.DQ.YLD": {"column": "yield_10yr", "description": "10-year GoC bond yield - key benchmark for long-term borrowing costs"},
+        "BD.CDN.LONG.DQ.YLD": {"column": "yield_long", "description": "Long-term GoC bond yield (30+ years) - reflects long-run inflation expectations"},
+        "BD.CDN.RRB.DQ.YLD": {"column": "yield_real_return", "description": "Real Return Bond yield - inflation-indexed, shows real interest rate expectations"}
+      }
+    },
+
+    "overnight_rates": {
+      "title": "Bank of Canada: Canadian Overnight Repo Rate Average (CORRA)",
+      "description": "Bank of Canada CORRA benchmark overnight interest rate for Canadian dollar markets, measuring the cost of overnight funding secured by Government of Canada bonds.",
+      "frequency": "daily",
+      "series": {
+        "CORRA": {"column": "corra_rate", "description": "Daily CORRA rate - the volume-weighted median repo rate for overnight transactions"},
+        "CORRA.COMPOUNDED.INDEX": {"column": "corra_compounded_index", "description": "Compounded CORRA index for calculating interest on CORRA-linked instruments"},
+        "CORRA_TOTAL_VOLUME": {"column": "total_volume", "description": "Total dollar volume of all overnight repo trades used in CORRA calculation"},
+        "CORRA_TRIMMED_VOLUME": {"column": "trimmed_volume", "description": "Trimmed volume after removing outlier trades from CORRA calculation"},
+        "CORRA_RATE_AT_PERCENTILE_5": {"column": "rate_p5", "description": "5th percentile of overnight repo rates - lower bound of typical trading range"},
+        "CORRA_RATE_AT_PERCENTILE_25": {"column": "rate_p25", "description": "25th percentile of overnight repo rates"},
+        "CORRA_RATE_AT_PERCENTILE_75": {"column": "rate_p75", "description": "75th percentile of overnight repo rates - upper bound of typical trading range"}
+      }
+    },
+
+    "commodity_price_index_monthly": {
+      "title": "Bank of Canada: Commodity Price Index (Monthly)",
+      "description": "Bank of Canada monthly index tracking prices of commodities produced in Canada and sold in world markets. Critical for understanding terms of trade and CAD movements.",
+      "frequency": "monthly",
+      "series": {
+        "INDINF_CPITOT_M": {"column": "bcpi_total", "description": "Total Bank of Canada Commodity Price Index - overall commodity price trends"},
+        "INDINF_CPIENER_M": {"column": "bcpi_energy", "description": "Energy component of BCPI - oil, natural gas, coal prices affecting Alberta/Saskatchewan"},
+        "INDINF_CPINE_M": {"column": "bcpi_non_energy", "description": "Non-energy BCPI - agricultural, forestry, metals, minerals"}
+      }
+    },
+
+    "commodity_price_index_annual": {
+      "title": "Bank of Canada: Commodity Price Index (Annual)",
+      "description": "Bank of Canada annual averages of commodity price indices by sector. Useful for long-term trend analysis.",
+      "frequency": "annual",
+      "series": {
+        "A.BCPI": {"column": "bcpi_total", "description": "Annual total BCPI - average commodity price level for the year"},
+        "A.BCNE": {"column": "bcpi_non_energy", "description": "Annual non-energy BCPI - excludes volatile oil and gas prices"},
+        "A.ENER": {"column": "bcpi_energy", "description": "Annual energy component - crude oil, natural gas dominate"},
+        "A.AGRI": {"column": "bcpi_agriculture", "description": "Annual agricultural commodity prices - wheat, canola, livestock"},
+        "A.FISH": {"column": "bcpi_fisheries", "description": "Annual fisheries commodity prices - seafood exports"},
+        "A.FOPR": {"column": "bcpi_forestry", "description": "Annual forestry products - lumber, pulp, paper prices"},
+        "A.MTLS": {"column": "bcpi_metals", "description": "Annual metals and minerals - copper, gold, iron ore, potash"}
+      }
+    },
+
+    "inflation_measures_monthly": {
+      "title": "Bank of Canada: Consumer Price Inflation (Monthly)",
+      "description": "Bank of Canada monthly inflation measures including headline CPI and preferred core measures used for monetary policy decisions.",
+      "frequency": "monthly",
+      "series": {
+        "INDINF_CPI_M": {"column": "cpi_inflation", "description": "Monthly CPI inflation rate - headline measure of consumer price changes"},
+        "INDINF_CPI_MEDIAN_M": {"column": "cpi_median", "description": "CPI-median - Bank of Canada's preferred core measure, median price change across basket"},
+        "INDINF_CPI_TRIM_M": {"column": "cpi_trim", "description": "CPI-trim - excludes components with most extreme price changes each month"},
+        "INDINF_CPI_COMMON_M": {"column": "cpi_common", "description": "CPI-common - tracks common price movements across basket, filters idiosyncratic"}
+      }
+    },
+
+    "inflation_measures_quarterly": {
+      "title": "Bank of Canada: Consumer Price Inflation (Quarterly)",
+      "description": "Bank of Canada quarterly averages of inflation measures, useful for comparing with quarterly economic data.",
+      "frequency": "quarterly",
+      "series": {
+        "INDINF_CPI_Q": {"column": "cpi_inflation", "description": "Quarterly CPI inflation - average of monthly readings"},
+        "INDINF_CPI_MEDIAN_Q": {"column": "cpi_median", "description": "Quarterly CPI-median - filters out extreme price movements"},
+        "INDINF_CPI_TRIM_Q": {"column": "cpi_trim", "description": "Quarterly CPI-trim - excludes items with largest price changes"},
+        "INDINF_CPI_COMMON_Q": {"column": "cpi_common", "description": "Quarterly CPI-common - underlying inflation trend across categories"}
+      }
+    },
+
+    "senior_loan_officer_survey": {
+      "title": "Bank of Canada: Senior Loan Officer Survey (SLOS)",
+      "description": "Bank of Canada quarterly survey of Canadian financial institutions on lending conditions and credit demand. Key indicator of credit availability in the economy.",
+      "frequency": "quarterly",
+      "series": {
+        "SLOS_BUSINESS_PRICE": {"column": "business_lending_price", "description": "Net percentage of lenders tightening pricing on business loans"},
+        "SLOS_BUSINESS_NONPRICE": {"column": "business_lending_nonprice", "description": "Net percentage tightening non-price terms (collateral, covenants) for businesses"},
+        "SLOS_MORTGAGE": {"column": "mortgage_lending", "description": "Net percentage of lenders tightening mortgage lending conditions"},
+        "SLOS_CONSUMER": {"column": "consumer_lending", "description": "Net percentage tightening consumer lending (credit cards, auto loans)"}
+      }
+    },
+
+    "financial_vulnerability_housing": {
+      "title": "Bank of Canada: Housing Market Vulnerability Indicators",
+      "description": "Bank of Canada quarterly indicators of housing market conditions and consumer expectations for house prices by province.",
+      "frequency": "quarterly",
+      "series": {
+        "FVI_CSCE_CAN": {"column": "house_price_expect_canada", "description": "Expected % increase in avg house prices over next 12 months - all of Canada"},
+        "FVI_CSCE_ON": {"column": "house_price_expect_ontario", "description": "Expected house price increase - Ontario (largest housing market)"},
+        "FVI_CSCE_BC": {"column": "house_price_expect_bc", "description": "Expected house price increase - BC (Vancouver market)"},
+        "FVI_CSCE_AB": {"column": "house_price_expect_alberta", "description": "Expected house price increase - Alberta (oil-dependent market)"},
+        "FVI_CSCE_QC": {"column": "house_price_expect_quebec", "description": "Expected house price increase - Quebec"},
+        "FVI_CSCE_ATL": {"column": "house_price_expect_atlantic", "description": "Expected house price increase - Atlantic provinces"},
+        "FVI_CSCE_MB": {"column": "house_price_expect_manitoba", "description": "Expected house price increase - Manitoba"},
+        "FVI_CSCE_SK": {"column": "house_price_expect_saskatchewan", "description": "Expected house price increase - Saskatchewan"}
+      }
+    },
+
+    "financial_vulnerability_stress": {
+      "title": "Bank of Canada: Household Financial Stress Indicators",
+      "description": "Bank of Canada quarterly measures of household financial vulnerability and stress from the Financial System Review data.",
+      "frequency": "quarterly",
+      "series": {
+        "FVI_FIN_STRESS": {"column": "financial_stress_rate", "description": "Share of indebted households behind on payments for 60+ days in any credit category (%)"},
+        "FVI_CREA_HOUSE_RESALE_INDEXED_CANADA": {"column": "house_resales_indexed", "description": "CREA house resale activity indexed to historical average - measures market activity"},
+        "FVI_CREA_HOUSE_SALES_TO_NEW_LISTINGS_CANADA": {"column": "sales_to_listings_ratio", "description": "Ratio of sales to new listings - above 60% indicates seller's market"},
+        "FVI_CREA_MLS_HPI_CANADA": {"column": "mls_hpi_canada", "description": "MLS Home Price Index - benchmark house prices across Canada"}
+      }
+    },
+
+    "bos_labour_shortages": {
+      "title": "Bank of Canada: Business Outlook Survey - Labour Shortages",
+      "description": "Bank of Canada quarterly survey measuring the share of firms reporting labour shortages that restrict their ability to meet demand, by region, sector, and firm size.",
+      "frequency": "quarterly",
+      "series": {
+        "BOS_LS_AT": {"column": "atlantic", "description": "Pct of Atlantic region firms reporting labour shortages restricting ability to meet demand"},
+        "BOS_LS_QC": {"column": "quebec", "description": "Pct of Quebec firms reporting labour shortages restricting ability to meet demand"},
+        "BOS_LS_ON": {"column": "ontario", "description": "Pct of Ontario firms reporting labour shortages restricting ability to meet demand"},
+        "BOS_LS_PR": {"column": "prairies", "description": "Pct of Prairie firms (AB, SK, MB) reporting labour shortages restricting operations"},
+        "BOS_LS_BC": {"column": "british_columbia", "description": "Pct of BC firms reporting labour shortages restricting ability to meet demand"},
+        "BOS_LS_PRIMARY": {"column": "sector_primary", "description": "Pct of primary sector firms (agriculture, mining, forestry) with labour shortages"},
+        "BOS_LS_MANUFACT": {"column": "sector_manufacturing", "description": "Pct of manufacturing firms reporting labour shortages"},
+        "BOS_LS_CITU": {"column": "sector_citu", "description": "Pct of construction/IT/utilities firms with labour shortages"},
+        "BOS_LS_TRADE": {"column": "sector_trade", "description": "Pct of wholesale and retail trade firms with labour shortages"},
+        "BOS_LS_FIRE": {"column": "sector_fire", "description": "Pct of finance/insurance/real estate firms with labour shortages"},
+        "BOS_LS_CPBS": {"column": "sector_cpbs", "description": "Pct of commercial/professional business services firms with labour shortages"},
+        "BOS_LS_S": {"column": "firm_small", "description": "Pct of small firms (<100 employees) reporting labour shortages"},
+        "BOS_LS_M": {"column": "firm_medium", "description": "Pct of medium firms (100-499 employees) reporting labour shortages"},
+        "BOS_LS_L": {"column": "firm_large", "description": "Pct of large firms (500+ employees) reporting labour shortages"}
+      }
+    },
+
+    "bos_labour_shortage_intensity": {
+      "title": "Bank of Canada: Business Outlook Survey - Labour Shortage Intensity",
+      "description": "Bank of Canada quarterly measure of how significantly labour shortages are affecting firms that report them. Higher values mean shortages are more binding.",
+      "frequency": "quarterly",
+      "series": {
+        "BOS_LSI_AT": {"column": "atlantic", "description": "Intensity index of labour shortage impact on Atlantic region firms"},
+        "BOS_LSI_QC": {"column": "quebec", "description": "Intensity index of labour shortage impact on Quebec firms"},
+        "BOS_LSI_ON": {"column": "ontario", "description": "Intensity index of labour shortage impact on Ontario firms"},
+        "BOS_LSI_PR": {"column": "prairies", "description": "Intensity index of labour shortage impact on Prairie firms"},
+        "BOS_LSI_BC": {"column": "british_columbia", "description": "Intensity index of labour shortage impact on BC firms"},
+        "BOS_LSI_PRIMARY": {"column": "sector_primary", "description": "Intensity of labour shortages in primary sector"},
+        "BOS_LSI_MANUFACT": {"column": "sector_manufacturing", "description": "Intensity of labour shortages in manufacturing"},
+        "BOS_LSI_CITU": {"column": "sector_citu", "description": "Intensity of labour shortages in construction/IT/utilities"},
+        "BOS_LSI_TRADE": {"column": "sector_trade", "description": "Intensity of labour shortages in trade sector"},
+        "BOS_LSI_FIRE": {"column": "sector_fire", "description": "Intensity of labour shortages in finance/insurance/real estate"},
+        "BOS_LSI_CPBS": {"column": "sector_cpbs", "description": "Intensity of labour shortages in business services"},
+        "BOS_LSI_S": {"column": "firm_small", "description": "Intensity of labour shortages for small firms"},
+        "BOS_LSI_M": {"column": "firm_medium", "description": "Intensity of labour shortages for medium firms"},
+        "BOS_LSI_L": {"column": "firm_large", "description": "Intensity of labour shortages for large firms"}
+      }
+    },
+
+    "bos_future_sales": {
+      "title": "Bank of Canada: Business Outlook Survey - Future Sales Expectations",
+      "description": "Bank of Canada quarterly survey of business expectations for sales volume growth over the next 12 months. Positive values indicate expected growth.",
+      "frequency": "quarterly",
+      "series": {
+        "BOS_FS_AT": {"column": "atlantic", "description": "Balance of opinion on future sales growth - Atlantic region firms"},
+        "BOS_FS_QC": {"column": "quebec", "description": "Balance of opinion on future sales growth - Quebec firms"},
+        "BOS_FS_ON": {"column": "ontario", "description": "Balance of opinion on future sales growth - Ontario firms"},
+        "BOS_FS_PR": {"column": "prairies", "description": "Balance of opinion on future sales growth - Prairie firms"},
+        "BOS_FS_BC": {"column": "british_columbia", "description": "Balance of opinion on future sales growth - BC firms"},
+        "BOS_FS_PRIMARY": {"column": "sector_primary", "description": "Balance of opinion on future sales - primary sector"},
+        "BOS_FS_MANUFACT": {"column": "sector_manufacturing", "description": "Balance of opinion on future sales - manufacturing"},
+        "BOS_FS_CITU": {"column": "sector_citu", "description": "Balance of opinion on future sales - construction/IT/utilities"},
+        "BOS_FS_TRADE": {"column": "sector_trade", "description": "Balance of opinion on future sales - trade sector"},
+        "BOS_FS_FIRE": {"column": "sector_fire", "description": "Balance of opinion on future sales - finance/insurance/real estate"},
+        "BOS_FS_CPBS": {"column": "sector_cpbs", "description": "Balance of opinion on future sales - business services"},
+        "BOS_FS_S": {"column": "firm_small", "description": "Balance of opinion on future sales - small firms"},
+        "BOS_FS_M": {"column": "firm_medium", "description": "Balance of opinion on future sales - medium firms"},
+        "BOS_FS_L": {"column": "firm_large", "description": "Balance of opinion on future sales - large firms"}
+      }
+    },
+
+    "bos_past_sales_indicator": {
+      "title": "Bank of Canada: Business Outlook Survey - Past Sales Indicator",
+      "description": "Bank of Canada quarterly indicator of actual sales performance over the past 12 months. Positive values mean sales exceeded expectations.",
+      "frequency": "quarterly",
+      "series": {
+        "BOS_PS_AT": {"column": "atlantic", "description": "Past sales performance indicator - Atlantic region firms"},
+        "BOS_PS_QC": {"column": "quebec", "description": "Past sales performance indicator - Quebec firms"},
+        "BOS_PS_ON": {"column": "ontario", "description": "Past sales performance indicator - Ontario firms"},
+        "BOS_PS_PR": {"column": "prairies", "description": "Past sales performance indicator - Prairie firms"},
+        "BOS_PS_BC": {"column": "british_columbia", "description": "Past sales performance indicator - BC firms"},
+        "BOS_PS_PRIMARY": {"column": "sector_primary", "description": "Past sales performance - primary sector"},
+        "BOS_PS_MANUFACT": {"column": "sector_manufacturing", "description": "Past sales performance - manufacturing"},
+        "BOS_PS_CITU": {"column": "sector_citu", "description": "Past sales performance - construction/IT/utilities"},
+        "BOS_PS_TRADE": {"column": "sector_trade", "description": "Past sales performance - trade sector"},
+        "BOS_PS_FIRE": {"column": "sector_fire", "description": "Past sales performance - finance/insurance/real estate"},
+        "BOS_PS_CPBS": {"column": "sector_cpbs", "description": "Past sales performance - business services"},
+        "BOS_PS_S": {"column": "firm_small", "description": "Past sales performance - small firms"},
+        "BOS_PS_M": {"column": "firm_medium", "description": "Past sales performance - medium firms"},
+        "BOS_PS_L": {"column": "firm_large", "description": "Past sales performance - large firms"}
+      }
+    },
+
+    "bos_employment_intentions": {
+      "title": "Bank of Canada: Business Outlook Survey - Employment Intentions",
+      "description": "Bank of Canada quarterly survey of business hiring intentions over the next 12 months. Positive balance means more firms plan to increase than decrease employment.",
+      "frequency": "quarterly",
+      "series": {
+        "BOS_EMP_AT": {"column": "atlantic", "description": "Net hiring intentions - Atlantic region (positive = net hiring)"},
+        "BOS_EMP_QC": {"column": "quebec", "description": "Net hiring intentions - Quebec firms"},
+        "BOS_EMP_ON": {"column": "ontario", "description": "Net hiring intentions - Ontario firms"},
+        "BOS_EMP_PR": {"column": "prairies", "description": "Net hiring intentions - Prairie firms"},
+        "BOS_EMP_BC": {"column": "british_columbia", "description": "Net hiring intentions - BC firms"},
+        "BOS_EMP_PRIMARY": {"column": "sector_primary", "description": "Net hiring intentions - primary sector"},
+        "BOS_EMP_MANUFACT": {"column": "sector_manufacturing", "description": "Net hiring intentions - manufacturing sector"},
+        "BOS_EMP_CITU": {"column": "sector_citu", "description": "Net hiring intentions - construction/IT/utilities"},
+        "BOS_EMP_TRADE": {"column": "sector_trade", "description": "Net hiring intentions - trade sector"},
+        "BOS_EMP_FIRE": {"column": "sector_fire", "description": "Net hiring intentions - finance/insurance/real estate"},
+        "BOS_EMP_CPBS": {"column": "sector_cpbs", "description": "Net hiring intentions - business services"},
+        "BOS_EMP_S": {"column": "firm_small", "description": "Net hiring intentions - small firms (<100 employees)"},
+        "BOS_EMP_M": {"column": "firm_medium", "description": "Net hiring intentions - medium firms (100-499)"},
+        "BOS_EMP_L": {"column": "firm_large", "description": "Net hiring intentions - large firms (500+)"}
+      }
+    },
+
+    "bos_investment_intentions": {
+      "title": "Bank of Canada: Business Outlook Survey - Investment Intentions",
+      "description": "Bank of Canada quarterly survey of business capital spending intentions over the next 12 months. Key leading indicator of business investment.",
+      "frequency": "quarterly",
+      "series": {
+        "BOS_INV_AT": {"column": "atlantic", "description": "Net investment intentions - Atlantic region firms"},
+        "BOS_INV_QC": {"column": "quebec", "description": "Net investment intentions - Quebec firms"},
+        "BOS_INV_ON": {"column": "ontario", "description": "Net investment intentions - Ontario firms"},
+        "BOS_INV_PR": {"column": "prairies", "description": "Net investment intentions - Prairie firms (oil/gas investment heavy)"},
+        "BOS_INV_BC": {"column": "british_columbia", "description": "Net investment intentions - BC firms"},
+        "BOS_INV_PRIMARY": {"column": "sector_primary", "description": "Net investment intentions - primary sector (highly cyclical)"},
+        "BOS_INV_MANUFACT": {"column": "sector_manufacturing", "description": "Net investment intentions - manufacturing"},
+        "BOS_INV_CITU": {"column": "sector_citu", "description": "Net investment intentions - construction/IT/utilities"},
+        "BOS_INV_TRADE": {"column": "sector_trade", "description": "Net investment intentions - trade sector"},
+        "BOS_INV_FIRE": {"column": "sector_fire", "description": "Net investment intentions - finance/insurance/real estate"},
+        "BOS_INV_CPBS": {"column": "sector_cpbs", "description": "Net investment intentions - business services"},
+        "BOS_INV_S": {"column": "firm_small", "description": "Net investment intentions - small firms"},
+        "BOS_INV_M": {"column": "firm_medium", "description": "Net investment intentions - medium firms"},
+        "BOS_INV_L": {"column": "firm_large", "description": "Net investment intentions - large firms"}
+      }
+    },
+
+    "bos_wage_expectations": {
+      "title": "Bank of Canada: Business Outlook Survey - Wage Growth Expectations",
+      "description": "Bank of Canada quarterly survey of business expectations for wage increases over the next 12 months. Important for inflation and labour cost pressures.",
+      "frequency": "quarterly",
+      "series": {
+        "BOS_WAGE_AT": {"column": "atlantic", "description": "Expected avg wage increase over next 12m - Atlantic region firms"},
+        "BOS_WAGE_QC": {"column": "quebec", "description": "Expected avg wage increase over next 12m - Quebec firms"},
+        "BOS_WAGE_ON": {"column": "ontario", "description": "Expected avg wage increase over next 12m - Ontario firms"},
+        "BOS_WAGE_PR": {"column": "prairies", "description": "Expected avg wage increase over next 12m - Prairie firms"},
+        "BOS_WAGE_BC": {"column": "british_columbia", "description": "Expected avg wage increase over next 12m - BC firms"},
+        "BOS_WAGE_PRIMARY": {"column": "sector_primary", "description": "Expected wage growth - primary sector"},
+        "BOS_WAGE_MANUFACT": {"column": "sector_manufacturing", "description": "Expected wage growth - manufacturing"},
+        "BOS_WAGE_CITU": {"column": "sector_citu", "description": "Expected wage growth - construction/IT/utilities"},
+        "BOS_WAGE_TRADE": {"column": "sector_trade", "description": "Expected wage growth - trade sector"},
+        "BOS_WAGE_FIRE": {"column": "sector_fire", "description": "Expected wage growth - finance/insurance/real estate"},
+        "BOS_WAGE_CPBS": {"column": "sector_cpbs", "description": "Expected wage growth - business services"},
+        "BOS_WAGE_S": {"column": "firm_small", "description": "Expected wage growth - small firms"},
+        "BOS_WAGE_M": {"column": "firm_medium", "description": "Expected wage growth - medium firms"},
+        "BOS_WAGE_L": {"column": "firm_large", "description": "Expected wage growth - large firms"}
+      }
+    },
+
+    "bos_input_prices": {
+      "title": "Bank of Canada: Business Outlook Survey - Input Price Expectations",
+      "description": "Bank of Canada quarterly survey of business expectations for changes in input costs (materials, energy, labour) over the next 12 months.",
+      "frequency": "quarterly",
+      "series": {
+        "BOS_INP_AT": {"column": "atlantic", "description": "Expected input price change - Atlantic region firms"},
+        "BOS_INP_QC": {"column": "quebec", "description": "Expected input price change - Quebec firms"},
+        "BOS_INP_ON": {"column": "ontario", "description": "Expected input price change - Ontario firms"},
+        "BOS_INP_PR": {"column": "prairies", "description": "Expected input price change - Prairie firms"},
+        "BOS_INP_BC": {"column": "british_columbia", "description": "Expected input price change - BC firms"},
+        "BOS_INP_PRIMARY": {"column": "sector_primary", "description": "Expected input price change - primary sector"},
+        "BOS_INP_MANUFACT": {"column": "sector_manufacturing", "description": "Expected input price change - manufacturing"},
+        "BOS_INP_CITU": {"column": "sector_citu", "description": "Expected input price change - construction/IT/utilities"},
+        "BOS_INP_TRADE": {"column": "sector_trade", "description": "Expected input price change - trade sector"},
+        "BOS_INP_FIRE": {"column": "sector_fire", "description": "Expected input price change - finance/insurance/real estate"},
+        "BOS_INP_CPBS": {"column": "sector_cpbs", "description": "Expected input price change - business services"},
+        "BOS_INP_S": {"column": "firm_small", "description": "Expected input price change - small firms"},
+        "BOS_INP_M": {"column": "firm_medium", "description": "Expected input price change - medium firms"},
+        "BOS_INP_L": {"column": "firm_large", "description": "Expected input price change - large firms"}
+      }
+    },
+
+    "bos_output_prices": {
+      "title": "Bank of Canada: Business Outlook Survey - Output Price Expectations",
+      "description": "Bank of Canada quarterly survey of business expectations for changes in their own selling prices over the next 12 months. Key indicator of pass-through to consumers.",
+      "frequency": "quarterly",
+      "series": {
+        "BOS_OUP_AT": {"column": "atlantic", "description": "Expected selling price change - Atlantic region firms"},
+        "BOS_OUP_QC": {"column": "quebec", "description": "Expected selling price change - Quebec firms"},
+        "BOS_OUP_ON": {"column": "ontario", "description": "Expected selling price change - Ontario firms"},
+        "BOS_OUP_PR": {"column": "prairies", "description": "Expected selling price change - Prairie firms"},
+        "BOS_OUP_BC": {"column": "british_columbia", "description": "Expected selling price change - BC firms"},
+        "BOS_OUP_PRIMARY": {"column": "sector_primary", "description": "Expected selling price change - primary sector"},
+        "BOS_OUP_MANUFACT": {"column": "sector_manufacturing", "description": "Expected selling price change - manufacturing"},
+        "BOS_OUP_CITU": {"column": "sector_citu", "description": "Expected selling price change - construction/IT/utilities"},
+        "BOS_OUP_TRADE": {"column": "sector_trade", "description": "Expected selling price change - trade sector"},
+        "BOS_OUP_FIRE": {"column": "sector_fire", "description": "Expected selling price change - finance/insurance/real estate"},
+        "BOS_OUP_CPBS": {"column": "sector_cpbs", "description": "Expected selling price change - business services"},
+        "BOS_OUP_S": {"column": "firm_small", "description": "Expected selling price change - small firms"},
+        "BOS_OUP_M": {"column": "firm_medium", "description": "Expected selling price change - medium firms"},
+        "BOS_OUP_L": {"column": "firm_large", "description": "Expected selling price change - large firms"}
+      }
+    },
+
+    "bos_inflation_expectations": {
+      "title": "Bank of Canada: Business Outlook Survey - Inflation Expectations",
+      "description": "Bank of Canada quarterly survey of business expectations for CPI inflation over the next 2 years. Key input for monetary policy.",
+      "frequency": "quarterly",
+      "series": {
+        "BOS_INF_ABOVE_3_AT": {"column": "expect_above_3pct_atlantic", "description": "Pct of Atlantic firms expecting inflation above 3% over next 2 years"},
+        "BOS_INF_ABOVE_3_QC": {"column": "expect_above_3pct_quebec", "description": "Pct of Quebec firms expecting inflation above 3% over next 2 years"},
+        "BOS_INF_ABOVE_3_ON": {"column": "expect_above_3pct_ontario", "description": "Pct of Ontario firms expecting inflation above 3% over next 2 years"},
+        "BOS_INF_ABOVE_3_PR": {"column": "expect_above_3pct_prairies", "description": "Pct of Prairie firms expecting inflation above 3% over next 2 years"},
+        "BOS_INF_ABOVE_3_BC": {"column": "expect_above_3pct_bc", "description": "Pct of BC firms expecting inflation above 3% over next 2 years"},
+        "BOS_INF_ABOVE_3_PRIMARY": {"column": "expect_above_3pct_primary", "description": "Pct of primary sector firms expecting inflation above 3%"},
+        "BOS_INF_ABOVE_3_MANUFACT": {"column": "expect_above_3pct_manufacturing", "description": "Pct of manufacturing firms expecting inflation above 3%"},
+        "BOS_INF_ABOVE_3_CITU": {"column": "expect_above_3pct_citu", "description": "Pct of construction/IT/utilities expecting inflation above 3%"},
+        "BOS_INF_ABOVE_3_TRADE": {"column": "expect_above_3pct_trade", "description": "Pct of trade sector firms expecting inflation above 3%"},
+        "BOS_INF_ABOVE_3_FIRE": {"column": "expect_above_3pct_fire", "description": "Pct of finance/insurance/real estate expecting inflation above 3%"},
+        "BOS_INF_ABOVE_3_CPBS": {"column": "expect_above_3pct_cpbs", "description": "Pct of business services firms expecting inflation above 3%"},
+        "BOS_INF_ABOVE_3_S": {"column": "expect_above_3pct_small", "description": "Pct of small firms expecting inflation above 3%"},
+        "BOS_INF_ABOVE_3_M": {"column": "expect_above_3pct_medium", "description": "Pct of medium firms expecting inflation above 3%"},
+        "BOS_INF_ABOVE_3_L": {"column": "expect_above_3pct_large", "description": "Pct of large firms expecting inflation above 3%"}
+      }
+    },
+
+    "bos_inflation_expectations_neutral": {
+      "title": "Bank of Canada: Business Outlook Survey - Inflation Expectations (Neutral View)",
+      "description": "Bank of Canada quarterly survey of firms with neutral/anchored inflation expectations (expecting 1-3% inflation).",
+      "frequency": "quarterly",
+      "series": {
+        "BOS_INFNA_AT": {"column": "expect_1_to_3pct_atlantic", "description": "Pct of Atlantic firms expecting 1-3% inflation (anchored expectations)"},
+        "BOS_INFNA_QC": {"column": "expect_1_to_3pct_quebec", "description": "Pct of Quebec firms expecting 1-3% inflation"},
+        "BOS_INFNA_ON": {"column": "expect_1_to_3pct_ontario", "description": "Pct of Ontario firms expecting 1-3% inflation"},
+        "BOS_INFNA_PR": {"column": "expect_1_to_3pct_prairies", "description": "Pct of Prairie firms expecting 1-3% inflation"},
+        "BOS_INFNA_BC": {"column": "expect_1_to_3pct_bc", "description": "Pct of BC firms expecting 1-3% inflation"},
+        "BOS_INFNA_PRIMARY": {"column": "expect_1_to_3pct_primary", "description": "Pct of primary sector expecting 1-3% inflation"},
+        "BOS_INFNA_MANUFACT": {"column": "expect_1_to_3pct_manufacturing", "description": "Pct of manufacturing expecting 1-3% inflation"},
+        "BOS_INFNA_CITU": {"column": "expect_1_to_3pct_citu", "description": "Pct of construction/IT/utilities expecting 1-3% inflation"},
+        "BOS_INFNA_TRADE": {"column": "expect_1_to_3pct_trade", "description": "Pct of trade sector expecting 1-3% inflation"},
+        "BOS_INFNA_FIRE": {"column": "expect_1_to_3pct_fire", "description": "Pct of finance/insurance/real estate expecting 1-3% inflation"},
+        "BOS_INFNA_CPBS": {"column": "expect_1_to_3pct_cpbs", "description": "Pct of business services expecting 1-3% inflation"},
+        "BOS_INFNA_S": {"column": "expect_1_to_3pct_small", "description": "Pct of small firms expecting 1-3% inflation"},
+        "BOS_INFNA_M": {"column": "expect_1_to_3pct_medium", "description": "Pct of medium firms expecting 1-3% inflation"},
+        "BOS_INFNA_L": {"column": "expect_1_to_3pct_large", "description": "Pct of large firms expecting 1-3% inflation"}
+      }
+    },
+
+    "bos_capacity_constraints": {
+      "title": "Bank of Canada: Business Outlook Survey - Capacity Constraints",
+      "description": "Bank of Canada quarterly survey of firms reporting difficulty meeting unexpected demand due to capacity constraints. Indicator of economic slack.",
+      "frequency": "quarterly",
+      "series": {
+        "BOS_CAPSOME_AT": {"column": "some_difficulty_atlantic", "description": "Pct of Atlantic firms with some difficulty meeting unexpected demand"},
+        "BOS_CAPSOME_QC": {"column": "some_difficulty_quebec", "description": "Pct of Quebec firms with some difficulty meeting unexpected demand"},
+        "BOS_CAPSOME_ON": {"column": "some_difficulty_ontario", "description": "Pct of Ontario firms with some difficulty meeting unexpected demand"},
+        "BOS_CAPSOME_PR": {"column": "some_difficulty_prairies", "description": "Pct of Prairie firms with some difficulty meeting unexpected demand"},
+        "BOS_CAPSOME_BC": {"column": "some_difficulty_bc", "description": "Pct of BC firms with some difficulty meeting unexpected demand"},
+        "BOS_CAPSOME_S": {"column": "some_difficulty_small", "description": "Pct of small firms with some difficulty meeting unexpected demand"},
+        "BOS_CAPSOME_M": {"column": "some_difficulty_medium", "description": "Pct of medium firms with some difficulty meeting unexpected demand"},
+        "BOS_CAPSOME_L": {"column": "some_difficulty_large", "description": "Pct of large firms with some difficulty meeting unexpected demand"},
+        "BOS_CAPSIGN_AT": {"column": "significant_difficulty_atlantic", "description": "Pct of Atlantic firms with significant difficulty meeting demand"},
+        "BOS_CAPSIGN_QC": {"column": "significant_difficulty_quebec", "description": "Pct of Quebec firms with significant difficulty meeting demand"},
+        "BOS_CAPSIGN_ON": {"column": "significant_difficulty_ontario", "description": "Pct of Ontario firms with significant difficulty meeting demand"},
+        "BOS_CAPSIGN_PR": {"column": "significant_difficulty_prairies", "description": "Pct of Prairie firms with significant difficulty meeting demand"},
+        "BOS_CAPSIGN_BC": {"column": "significant_difficulty_bc", "description": "Pct of BC firms with significant difficulty meeting demand"},
+        "BOS_CAPSIGN_S": {"column": "significant_difficulty_small", "description": "Pct of small firms with significant difficulty meeting demand"},
+        "BOS_CAPSIGN_M": {"column": "significant_difficulty_medium", "description": "Pct of medium firms with significant difficulty meeting demand"},
+        "BOS_CAPSIGN_L": {"column": "significant_difficulty_large", "description": "Pct of large firms with significant difficulty meeting demand"}
+      }
+    },
+
+    "bos_credit_conditions": {
+      "title": "Bank of Canada: Business Outlook Survey - Credit Conditions",
+      "description": "Bank of Canada quarterly survey of business perceptions of credit availability. Positive values indicate easier credit conditions.",
+      "frequency": "quarterly",
+      "series": {
+        "BOS_FIN_AT": {"column": "atlantic", "description": "Credit conditions balance - Atlantic region (positive = easier credit)"},
+        "BOS_FIN_QC": {"column": "quebec", "description": "Credit conditions balance - Quebec"},
+        "BOS_FIN_ON": {"column": "ontario", "description": "Credit conditions balance - Ontario"},
+        "BOS_FIN_PR": {"column": "prairies", "description": "Credit conditions balance - Prairies"},
+        "BOS_FIN_BC": {"column": "british_columbia", "description": "Credit conditions balance - BC"},
+        "BOS_FIN_PRIMARY": {"column": "sector_primary", "description": "Credit conditions balance - primary sector"},
+        "BOS_FIN_MANUFACT": {"column": "sector_manufacturing", "description": "Credit conditions balance - manufacturing"},
+        "BOS_FIN_CITU": {"column": "sector_citu", "description": "Credit conditions balance - construction/IT/utilities"},
+        "BOS_FIN_TRADE": {"column": "sector_trade", "description": "Credit conditions balance - trade sector"},
+        "BOS_FIN_FIRE": {"column": "sector_fire", "description": "Credit conditions balance - finance/insurance/real estate"},
+        "BOS_FIN_CPBS": {"column": "sector_cpbs", "description": "Credit conditions balance - business services"},
+        "BOS_FIN_S": {"column": "firm_small", "description": "Credit conditions balance - small firms"},
+        "BOS_FIN_M": {"column": "firm_medium", "description": "Credit conditions balance - medium firms"},
+        "BOS_FIN_L": {"column": "firm_large", "description": "Credit conditions balance - large firms"}
+      }
+    },
+
+    "ces_inflation_expectations_by_region": {
+      "title": "Bank of Canada: Consumer Expectations Survey - Inflation by Region",
+      "description": "Bank of Canada quarterly consumer inflation expectations and perceptions by Canadian province. Shows regional variation in inflation sentiment.",
+      "frequency": "quarterly",
+      "series": {
+        "CES_C1E_PERCEPTIONS_AB": {"column": "perceptions_alberta", "description": "Median perceived current inflation rate - Alberta consumers"},
+        "CES_C1E_PERCEPTIONS_AT": {"column": "perceptions_atlantic", "description": "Median perceived current inflation rate - Atlantic consumers"},
+        "CES_C1E_PERCEPTIONS_BC": {"column": "perceptions_bc", "description": "Median perceived current inflation rate - BC consumers"},
+        "CES_C1E_PERCEPTIONS_MB": {"column": "perceptions_manitoba", "description": "Median perceived current inflation rate - Manitoba consumers"},
+        "CES_C1E_PERCEPTIONS_ON": {"column": "perceptions_ontario", "description": "Median perceived current inflation rate - Ontario consumers"},
+        "CES_C1E_PERCEPTIONS_QC": {"column": "perceptions_quebec", "description": "Median perceived current inflation rate - Quebec consumers"},
+        "CES_C1E_PERCEPTIONS_SK": {"column": "perceptions_saskatchewan", "description": "Median perceived current inflation rate - Saskatchewan consumers"},
+        "CES_C1E_SHORT_TERM_AB": {"column": "expect_1yr_alberta", "description": "Median 1-year ahead inflation expectation - Alberta consumers"},
+        "CES_C1E_SHORT_TERM_AT": {"column": "expect_1yr_atlantic", "description": "Median 1-year ahead inflation expectation - Atlantic consumers"},
+        "CES_C1E_SHORT_TERM_BC": {"column": "expect_1yr_bc", "description": "Median 1-year ahead inflation expectation - BC consumers"},
+        "CES_C1E_SHORT_TERM_ON": {"column": "expect_1yr_ontario", "description": "Median 1-year ahead inflation expectation - Ontario consumers"},
+        "CES_C1E_SHORT_TERM_QC": {"column": "expect_1yr_quebec", "description": "Median 1-year ahead inflation expectation - Quebec consumers"},
+        "CES_C1E_MID_TERM_AB": {"column": "expect_2yr_alberta", "description": "Median 2-year ahead inflation expectation - Alberta consumers"},
+        "CES_C1E_MID_TERM_ON": {"column": "expect_2yr_ontario", "description": "Median 2-year ahead inflation expectation - Ontario consumers"},
+        "CES_C1E_MID_TERM_QC": {"column": "expect_2yr_quebec", "description": "Median 2-year ahead inflation expectation - Quebec consumers"},
+        "CES_C1E_LONG_TERM_AB": {"column": "expect_5yr_alberta", "description": "Median 5-year ahead inflation expectation - Alberta consumers"},
+        "CES_C1E_LONG_TERM_ON": {"column": "expect_5yr_ontario", "description": "Median 5-year ahead inflation expectation - Ontario consumers"},
+        "CES_C1E_LONG_TERM_QC": {"column": "expect_5yr_quebec", "description": "Median 5-year ahead inflation expectation - Quebec consumers"}
+      }
+    },
+
+    "ces_inflation_expectations_by_age": {
+      "title": "Bank of Canada: Consumer Expectations Survey - Inflation by Age",
+      "description": "Bank of Canada quarterly consumer inflation expectations by age cohort. Younger consumers typically have higher inflation expectations.",
+      "frequency": "quarterly",
+      "series": {
+        "CES_C1A_PERCEPTIONS_Y": {"column": "perceptions_18_24", "description": "Median perceived current inflation - consumers aged 18-24"},
+        "CES_C1A_PERCEPTIONS_P": {"column": "perceptions_25_54", "description": "Median perceived current inflation - prime working age (25-54)"},
+        "CES_C1A_PERCEPTIONS_S": {"column": "perceptions_55_plus", "description": "Median perceived current inflation - consumers 55 and older"},
+        "CES_C1A_SHORT_TERM_Y": {"column": "expect_1yr_18_24", "description": "Median 1-year inflation expectation - aged 18-24"},
+        "CES_C1A_SHORT_TERM_P": {"column": "expect_1yr_25_54", "description": "Median 1-year inflation expectation - aged 25-54"},
+        "CES_C1A_SHORT_TERM_S": {"column": "expect_1yr_55_plus", "description": "Median 1-year inflation expectation - aged 55+"},
+        "CES_C1A_MID_TERM_P": {"column": "expect_2yr_25_54", "description": "Median 2-year inflation expectation - aged 25-54"},
+        "CES_C1A_MID_TERM_S": {"column": "expect_2yr_55_plus", "description": "Median 2-year inflation expectation - aged 55+"},
+        "CES_C1A_LONG_TERM_P": {"column": "expect_5yr_25_54", "description": "Median 5-year inflation expectation - aged 25-54"},
+        "CES_C1A_LONG_TERM_S": {"column": "expect_5yr_55_plus", "description": "Median 5-year inflation expectation - aged 55+"}
+      }
+    },
+
+    "ces_inflation_expectations_by_income": {
+      "title": "Bank of Canada: Consumer Expectations Survey - Inflation by Income",
+      "description": "Bank of Canada quarterly consumer inflation expectations by household income level. Lower income households often perceive higher inflation.",
+      "frequency": "quarterly",
+      "series": {
+        "CES_C1C_PERCEPTIONS_L": {"column": "perceptions_under_40k", "description": "Median perceived inflation - households earning under $40K/year"},
+        "CES_C1C_PERCEPTIONS_M": {"column": "perceptions_40k_100k", "description": "Median perceived inflation - households earning $40K-$100K/year"},
+        "CES_C1C_PERCEPTIONS_H": {"column": "perceptions_over_100k", "description": "Median perceived inflation - households earning over $100K/year"},
+        "CES_C1C_SHORT_TERM_L": {"column": "expect_1yr_under_40k", "description": "Median 1-year inflation expectation - income under $40K"},
+        "CES_C1C_SHORT_TERM_M": {"column": "expect_1yr_40k_100k", "description": "Median 1-year inflation expectation - income $40K-$100K"},
+        "CES_C1C_SHORT_TERM_H": {"column": "expect_1yr_over_100k", "description": "Median 1-year inflation expectation - income over $100K"},
+        "CES_C1C_MID_TERM_L": {"column": "expect_2yr_under_40k", "description": "Median 2-year inflation expectation - income under $40K"},
+        "CES_C1C_MID_TERM_M": {"column": "expect_2yr_40k_100k", "description": "Median 2-year inflation expectation - income $40K-$100K"},
+        "CES_C1C_MID_TERM_H": {"column": "expect_2yr_over_100k", "description": "Median 2-year inflation expectation - income over $100K"},
+        "CES_C1C_LONG_TERM_L": {"column": "expect_5yr_under_40k", "description": "Median 5-year inflation expectation - income under $40K"},
+        "CES_C1C_LONG_TERM_M": {"column": "expect_5yr_40k_100k", "description": "Median 5-year inflation expectation - income $40K-$100K"},
+        "CES_C1C_LONG_TERM_H": {"column": "expect_5yr_over_100k", "description": "Median 5-year inflation expectation - income over $100K"}
+      }
+    },
+
+    "ces_inflation_expectations_by_education": {
+      "title": "Bank of Canada: Consumer Expectations Survey - Inflation by Education",
+      "description": "Bank of Canada quarterly consumer inflation expectations by education level. Higher education correlates with lower inflation expectations.",
+      "frequency": "quarterly",
+      "series": {
+        "CES_C1B_PERCEPTIONS_L": {"column": "perceptions_high_school", "description": "Median perceived inflation - high school education or less"},
+        "CES_C1B_PERCEPTIONS_C": {"column": "perceptions_some_college", "description": "Median perceived inflation - some college or trade school"},
+        "CES_C1B_PERCEPTIONS_B": {"column": "perceptions_university", "description": "Median perceived inflation - university degree holders"},
+        "CES_C1B_SHORT_TERM_L": {"column": "expect_1yr_high_school", "description": "Median 1-year inflation expectation - high school education"},
+        "CES_C1B_SHORT_TERM_C": {"column": "expect_1yr_some_college", "description": "Median 1-year inflation expectation - some college"},
+        "CES_C1B_SHORT_TERM_B": {"column": "expect_1yr_university", "description": "Median 1-year inflation expectation - university degree"},
+        "CES_C1B_MID_TERM_L": {"column": "expect_2yr_high_school", "description": "Median 2-year inflation expectation - high school education"},
+        "CES_C1B_MID_TERM_C": {"column": "expect_2yr_some_college", "description": "Median 2-year inflation expectation - some college"},
+        "CES_C1B_MID_TERM_B": {"column": "expect_2yr_university", "description": "Median 2-year inflation expectation - university degree"},
+        "CES_C1B_LONG_TERM_L": {"column": "expect_5yr_high_school", "description": "Median 5-year inflation expectation - high school education"},
+        "CES_C1B_LONG_TERM_C": {"column": "expect_5yr_some_college", "description": "Median 5-year inflation expectation - some college"},
+        "CES_C1B_LONG_TERM_B": {"column": "expect_5yr_university", "description": "Median 5-year inflation expectation - university degree"}
+      }
+    },
+
+    "merchant_payment_acceptance": {
+      "title": "Bank of Canada: Merchant Acceptance Survey - Payment Methods",
+      "description": "Bank of Canada survey of Canadian merchants on payment method acceptance. Shows evolution of cash vs digital payments in Canadian retail.",
+      "frequency": "triennial",
+      "series": {
+        "MAS_METHOD_CASH": {"column": "accept_cash_overall", "description": "Pct of merchants accepting cash payments - declining as digital rises"},
+        "MAS_METHOD_DEBIT": {"column": "accept_debit_overall", "description": "Pct of merchants accepting debit cards - Interac network"},
+        "MAS_METHOD_CREDIT": {"column": "accept_credit_overall", "description": "Pct of merchants accepting credit cards - Visa/Mastercard"},
+        "MAS_METHOD_REGION_CASH_AT": {"column": "accept_cash_atlantic", "description": "Cash acceptance in Atlantic provinces"},
+        "MAS_METHOD_REGION_CASH_QC": {"column": "accept_cash_quebec", "description": "Cash acceptance in Quebec"},
+        "MAS_METHOD_REGION_CASH_ON": {"column": "accept_cash_ontario", "description": "Cash acceptance in Ontario"},
+        "MAS_METHOD_REGION_CASH_PR": {"column": "accept_cash_prairies", "description": "Cash acceptance in Prairie provinces"},
+        "MAS_METHOD_REGION_CASH_BC": {"column": "accept_cash_bc", "description": "Cash acceptance in British Columbia"},
+        "MAS_METHOD_INDUSTRY_CASH_RETAIL": {"column": "accept_cash_retail", "description": "Cash acceptance in retail sector"},
+        "MAS_METHOD_INDUSTRY_CASH_FOOD": {"column": "accept_cash_food", "description": "Cash acceptance in food service sector"},
+        "MAS_METHOD_INDUSTRY_CASH_OTHER": {"column": "accept_cash_other", "description": "Cash acceptance in other service sectors"},
+        "MAS_INNOVATION_MOBILE": {"column": "accept_mobile_payments", "description": "Pct accepting mobile payments (Apple Pay, Google Pay)"},
+        "MAS_INNOVATION_ETRANSFER": {"column": "accept_etransfer", "description": "Pct accepting Interac e-Transfer payments"}
+      }
+    },
+
+    "public_trust_survey": {
+      "title": "Bank of Canada: Public Trust in Financial System Survey",
+      "description": "Bank of Canada annual survey of Canadian public trust in the financial system and central bank. Important for policy communication effectiveness.",
+      "frequency": "annual",
+      "series": {
+        "PS_TRUST_OVERALL_TRUST": {"column": "overall_trust", "description": "Pct of Canadians who trust the Bank of Canada overall"},
+        "PS_TRUST_OVERALL_NEUTRAL": {"column": "overall_neutral", "description": "Pct with neutral view of Bank of Canada"},
+        "PS_TRUST_OVERALL_DONTTRUST": {"column": "overall_distrust", "description": "Pct who distrust Bank of Canada"},
+        "PS_TRUST_INFLATION_TRUST": {"column": "trust_inflation_control", "description": "Pct who trust BoC to control inflation"},
+        "PS_TRUST_INFLATION_DONTTRUST": {"column": "distrust_inflation_control", "description": "Pct who distrust BoC's inflation control"},
+        "PS_TRUST_FINANCIALSYSTEM_TRUST": {"column": "trust_financial_system", "description": "Pct who trust Canadian financial system"},
+        "PS_TRUST_FINANCIALSYSTEM_DONTTRUST": {"column": "distrust_financial_system", "description": "Pct who distrust financial system"},
+        "PS_TRUST_ECONOMY_TRUST": {"column": "trust_economy_management", "description": "Pct who trust overall economic management"},
+        "PS_SAFETY_BANKINGSYSTEM": {"column": "perceive_banking_safe", "description": "Pct who perceive banking system as safe"},
+        "PS_SAFETY_FINANCIALSYSTEM": {"column": "perceive_financial_safe", "description": "Pct who perceive financial system as safe"},
+        "PS_AWARENESS_INFLATION": {"column": "aware_inflation_target", "description": "Pct aware of 2% inflation target"},
+        "PS_AWARENESS_INTERESTRATE": {"column": "aware_interest_rate", "description": "Pct aware of current policy interest rate"},
+        "PS_UNDERSTANDING_INTERESTRATE": {"column": "understand_rate_impact", "description": "Pct who understand how interest rates affect economy"},
+        "PS_AWARENESS_BANKNOTES": {"column": "aware_banknote_security", "description": "Pct aware of banknote security features"},
+        "PS_AWARENESS_FINANCIALSYSTEM": {"column": "aware_financial_system", "description": "Pct with awareness of Canadian financial system"}
+      }
+    },
+
+    "climate_transition_scenarios": {
+      "title": "Bank of Canada: Climate Transition Scenario Data",
+      "description": "Bank of Canada long-term projections (to 2050) under different climate policy scenarios used for climate risk analysis.",
+      "frequency": "annual",
+      "series": {
+        "CLIMATE_CHANGE_C3_S1": {"column": "baseline_2019_policies", "description": "Baseline scenario assuming 2019 climate policies continue unchanged"},
+        "CLIMATE_CHANGE_C3_S2": {"column": "below_2c_immediate", "description": "Below 2C scenario with immediate coordinated global policy action"},
+        "CLIMATE_CHANGE_C3_S3": {"column": "below_2c_delayed", "description": "Below 2C scenario with delayed policy action requiring steeper cuts later"},
+        "CLIMATE_CHANGE_C3_S4": {"column": "net_zero_2050", "description": "Net-zero by 2050 scenario (1.5C target) - most aggressive transition"},
+        "CLIMATE_CHANGE_C4_S1": {"column": "c4_scenario_1", "description": "Climate scenario C4 variant 1 - alternative transition pathway"},
+        "CLIMATE_CHANGE_C4_S2": {"column": "c4_scenario_2", "description": "Climate scenario C4 variant 2 - alternative transition pathway"},
+        "CLIMATE_CHANGE_C4_S3": {"column": "c4_scenario_3", "description": "Climate scenario C4 variant 3 - alternative transition pathway"},
+        "CLIMATE_CHANGE_C4_S4": {"column": "c4_scenario_4", "description": "Climate scenario C4 variant 4 - alternative transition pathway"}
+      }
+    }
+  },
+
+  "excluded_series": {
+    "_comment": "Series excluded because they are legacy/stale, one-off charts, or research paper appendices",
+    "legacy_exchange_rates": {
+      "description": "Legacy noon rates discontinued April 2017, superseded by new FX* series",
+      "patterns": ["^IEXE", "^IEXM", "^IEXA", "^EUROCAE", "^EUROCAM", "^EUROCAA"],
+      "count": "~200"
+    },
+    "legacy_banking_stats": {
+      "description": "Historical banking statistics no longer updated (last update 2017-2020)",
+      "patterns": ["^BM", "^MM", "^CP$", "^BA$", "^DEBTSEC"],
+      "count": "~100"
+    },
+    "chart_series": {
+      "description": "One-off chart data from publications - not continuous time series, embedded in specific reports",
+      "patterns": ["^BOS_\\d{4}Q\\d", "^CES_\\d{4}Q\\d", "^CSCE_\\d{4}Q\\d", "^FSR_", "^MPR_", "^SPEECH_", "^FSHUB_", "^FSS_", "^CFNIC_"],
+      "count": "~1500"
+    },
+    "research_paper_data": {
+      "description": "Data accompanying specific research papers - context-dependent, not standard releases",
+      "patterns": ["^SAN_", "^SWP_", "^SDP_", "^WM_", "^SAN2016", "^SAN2017"],
+      "count": "~1400"
+    },
+    "detailed_distributions": {
+      "description": "Granular bucket distributions (e.g., 5-6%, 6-7%) - too fine-grained for most use cases",
+      "patterns": ["^CES_C2_"],
+      "count": "~200"
+    },
+    "auction_operational_data": {
+      "description": "Bond auction operational details - ISINs, settlement dates, amounts - not time series analysis",
+      "patterns": ["^AUC_", "^BOND_GRN", "^BOND_UKR", "^INDEX_RATIO"],
+      "count": "~300"
+    },
+    "balance_sheet_items": {
+      "description": "Bank of Canada balance sheet line items - specialized financial reporting",
+      "patterns": ["^BOC_ALL_OTHER", "^BOC_CLIMATERISKS"],
+      "count": "~50"
+    },
+    "date_label_series": {
+      "description": "Auxiliary date/label series not containing actual data values",
+      "patterns": ["_DATE$", "_T_DATE$", "^PSD$", "^PS_DATE$", "^ACTUAL$", "^STATIC_"],
+      "count": "~100"
+    }
+  },
+
+  "dimension_mappings": {
+    "_comment": "Standard dimension values and their descriptions used across multiple datasets",
+    "regions": {
+      "AT": "Atlantic provinces (NB, NS, PE, NL)",
+      "QC": "Quebec",
+      "ON": "Ontario",
+      "PR": "Prairie provinces (AB, SK, MB)",
+      "BC": "British Columbia",
+      "AB": "Alberta",
+      "MB": "Manitoba",
+      "SK": "Saskatchewan",
+      "ATL": "Atlantic provinces (alternate code)"
+    },
+    "sectors": {
+      "PRIMARY": "Primary sector - agriculture, mining, oil & gas, forestry",
+      "MANUFACT": "Manufacturing - durable and non-durable goods production",
+      "CITU": "Construction, information technology, utilities",
+      "TRADE": "Wholesale and retail trade",
+      "FIRE": "Finance, insurance, and real estate",
+      "CPBS": "Commercial and professional business services"
+    },
+    "firm_sizes": {
+      "S": "Small firms - fewer than 100 employees",
+      "M": "Medium firms - 100 to 499 employees",
+      "L": "Large firms - 500 or more employees"
+    },
+    "demographics": {
+      "Y": "Young adults - aged 18-24",
+      "P": "Prime working age - 25-54",
+      "S": "Seniors - 55 and older",
+      "L": "Low income/education - under $40K or high school",
+      "M": "Middle income - $40K-$100K",
+      "H": "High income - over $100K",
+      "C": "Some college or trade school",
+      "B": "Bachelor's degree or higher"
+    }
+  }
+}

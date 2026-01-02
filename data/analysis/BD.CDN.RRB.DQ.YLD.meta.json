@@ -1,0 +1,109 @@
+{
+  "meta": {
+    "asset_name": "BD.CDN.RRB.DQ.YLD",
+    "source_path": "/Users/nathansnellaert/Documents/data-integrations/integrations/bank-of-canada/data/raw/series/BD.CDN.RRB.DQ.YLD.json",
+    "source_size_bytes": 924600,
+    "detected_format": "json",
+    "structure": "array",
+    "root_key_path": null,
+    "record_count": 6246,
+    "is_compressed": false,
+    "last_processed": "2025-12-27T16:51:26.806169",
+    "error": null
+  },
+  "schema": {
+    "rows": 6246,
+    "columns": {
+      "date": {
+        "type": "timestamp[us]",
+        "unique": 6246,
+        "cardinality": 1.0,
+        "samples": [
+          "2001-01-02 00:00:00",
+          "2001-01-03 00:00:00",
+          "2001-01-04 00:00:00",
+          "2001-01-05 00:00:00",
+          "2001-01-08 00:00:00"
+        ]
+      },
+      "series_code": {
+        "type": "string",
+        "unique": 1,
+        "cardinality": 0.0,
+        "min_len": 17,
+        "max_len": 17,
+        "samples": [
+          "BD.CDN.RRB.DQ.YLD"
+        ],
+        "issues": [
+          {
+            "type": "single_value",
+            "message": "All 6246 rows have same value",
+            "value": "BD.CDN.RRB.DQ.YLD"
+          }
+        ]
+      },
+      "value": {
+        "type": "string",
+        "unique": 401,
+        "cardinality": 0.064,
+        "min_len": 4,
+        "max_len": 5,
+        "samples": [
+          "0.64",
+          "0.61",
+          "1.65",
+          "0.59",
+          "0.68"
+        ],
+        "issues": [
+          {
+            "type": "numeric_as_string",
+            "message": "Column contains numbers stored as strings",
+            "example": "3.39"
+          }
+        ]
+      },
+      "series_label": {
+        "type": "string",
+        "unique": 1,
+        "cardinality": 0.0,
+        "min_len": 9,
+        "max_len": 9,
+        "samples": [
+          "Long-term"
+        ],
+        "issues": [
+          {
+            "type": "single_value",
+            "message": "All 6246 rows have same value",
+            "value": "Long-term"
+          }
+        ]
+      },
+      "series_description": {
+        "type": "string",
+        "unique": 1,
+        "cardinality": 0.0,
+        "min_len": 16,
+        "max_len": 16,
+        "samples": [
+          "Real return bond"
+        ],
+        "issues": [
+          {
+            "type": "single_value",
+            "message": "All 6246 rows have same value",
+            "value": "Real return bond"
+          }
+        ]
+      }
+    }
+  },
+  "issues": [
+    "series_code: All 6246 rows have same value",
+    "value: Column contains numbers stored as strings",
+    "series_label: All 6246 rows have same value",
+    "series_description: All 6246 rows have same value"
+  ]
+}

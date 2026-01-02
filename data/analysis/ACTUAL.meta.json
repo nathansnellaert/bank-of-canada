@@ -1,0 +1,130 @@
+{
+  "meta": {
+    "asset_name": "ACTUAL",
+    "source_path": "/Users/nathansnellaert/Documents/data-integrations/integrations/bank-of-canada/data/raw/series/ACTUAL.json",
+    "source_size_bytes": 1017438,
+    "detected_format": "json",
+    "structure": "array",
+    "root_key_path": null,
+    "record_count": 6774,
+    "is_compressed": false,
+    "last_processed": "2025-12-27T16:51:22.994603",
+    "error": null
+  },
+  "schema": {
+    "rows": 6774,
+    "columns": {
+      "date": {
+        "type": "string",
+        "unique": 6772,
+        "cardinality": 1.0,
+        "min_len": 4,
+        "max_len": 10,
+        "samples": [
+          "2025-12-03",
+          "2025-12-23",
+          "1999-02-04",
+          "1999-02-05",
+          "1999-02-08"
+        ]
+      },
+      "series_code": {
+        "type": "string",
+        "unique": 1,
+        "cardinality": 0.0,
+        "min_len": 6,
+        "max_len": 6,
+        "samples": [
+          "ACTUAL"
+        ],
+        "issues": [
+          {
+            "type": "single_value",
+            "message": "All 6774 rows have same value",
+            "value": "ACTUAL"
+          }
+        ]
+      },
+      "value": {
+        "type": "string",
+        "nulls": 1,
+        "null_pct": 0.01,
+        "unique": 1916,
+        "cardinality": 0.283,
+        "min_len": 1,
+        "max_len": 6,
+        "samples": [
+          "50",
+          "25",
+          "0",
+          "150",
+          "500"
+        ],
+        "issues": [
+          {
+            "type": "multi_granularity_dates",
+            "message": "Mixed date granularities: ['yearly', 'monthly_compact']",
+            "granularities": [
+              {
+                "granularity": "yearly",
+                "format": "YYYY",
+                "example": "1300"
+              },
+              {
+                "granularity": "monthly_compact",
+                "format": "YYYYMM",
+                "example": "107464"
+              }
+            ]
+          },
+          {
+            "type": "numeric_as_string",
+            "message": "Column contains numbers stored as strings",
+            "example": "0"
+          }
+        ]
+      },
+      "series_label": {
+        "type": "string",
+        "unique": 1,
+        "cardinality": 0.0,
+        "min_len": 6,
+        "max_len": 6,
+        "samples": [
+          "ACTUAL"
+        ],
+        "issues": [
+          {
+            "type": "single_value",
+            "message": "All 6774 rows have same value",
+            "value": "ACTUAL"
+          }
+        ]
+      },
+      "series_description": {
+        "type": "string",
+        "unique": 1,
+        "cardinality": 0.0,
+        "min_len": 33,
+        "max_len": 33,
+        "samples": [
+          "Lynx settlement balances - actual"
+        ],
+        "issues": [
+          {
+            "type": "single_value",
+            "message": "All 6774 rows have same value",
+            "value": "Lynx settlement balances - actual"
+          }
+        ]
+      }
+    }
+  },
+  "issues": [
+    "series_code: All 6774 rows have same value",
+    "value: Mixed date granularities: ['yearly', 'monthly_compact']",
+    "value: Column contains numbers stored as strings",
+    "series_label: All 6774 rows have same value",
+    "series_description: All 6774 rows have same value"
+  ]
+}

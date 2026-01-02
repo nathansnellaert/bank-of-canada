@@ -1,0 +1,109 @@
+{
+  "meta": {
+    "asset_name": "ATOM_V41693242",
+    "source_path": "/Users/nathansnellaert/Documents/data-integrations/integrations/bank-of-canada/data/raw/series/ATOM_V41693242.json",
+    "source_size_bytes": 132486,
+    "detected_format": "json",
+    "structure": "array",
+    "root_key_path": null,
+    "record_count": 311,
+    "is_compressed": false,
+    "last_processed": "2025-12-27T16:51:23.165840",
+    "error": null
+  },
+  "schema": {
+    "rows": 311,
+    "columns": {
+      "date": {
+        "type": "timestamp[us]",
+        "unique": 311,
+        "cardinality": 1.0,
+        "samples": [
+          "2000-01-01 00:00:00",
+          "2000-02-01 00:00:00",
+          "2000-03-01 00:00:00",
+          "2000-04-01 00:00:00",
+          "2000-05-01 00:00:00"
+        ]
+      },
+      "series_code": {
+        "type": "string",
+        "unique": 1,
+        "cardinality": 0.003,
+        "min_len": 14,
+        "max_len": 14,
+        "samples": [
+          "ATOM_V41693242"
+        ],
+        "issues": [
+          {
+            "type": "single_value",
+            "message": "All 311 rows have same value",
+            "value": "ATOM_V41693242"
+          }
+        ]
+      },
+      "value": {
+        "type": "string",
+        "unique": 43,
+        "cardinality": 0.138,
+        "min_len": 3,
+        "max_len": 3,
+        "samples": [
+          "1.7",
+          "1.5",
+          "2.1",
+          "1.8",
+          "1.6"
+        ],
+        "issues": [
+          {
+            "type": "numeric_as_string",
+            "message": "Column contains numbers stored as strings",
+            "example": "1.2"
+          }
+        ]
+      },
+      "series_label": {
+        "type": "string",
+        "unique": 1,
+        "cardinality": 0.003,
+        "min_len": 52,
+        "max_len": 52,
+        "samples": [
+          "CPIX, Percentage Change over 1 year ago (unadjusted)"
+        ],
+        "issues": [
+          {
+            "type": "single_value",
+            "message": "All 311 rows have same value",
+            "value": "CPIX, Percentage Change over 1 year ago (unadjusted)"
+          }
+        ]
+      },
+      "series_description": {
+        "type": "string",
+        "unique": 1,
+        "cardinality": 0.003,
+        "min_len": 255,
+        "max_len": 255,
+        "samples": [
+          "The CPI excluding eight of the most volatile components (fruit, vegetables, gasoline, fuel oil, natural gas, mortgage interest, inter-city transportation and tobacco products) as well as the effect of changes in indirect taxes on the remaining components."
+        ],
+        "issues": [
+          {
+            "type": "single_value",
+            "message": "All 311 rows have same value",
+            "value": "The CPI excluding eight of the most volatile components (fruit, vegetables, gasoline, fuel oil, natural gas, mortgage interest, inter-city transportation and tobacco products) as well as the effect of changes in indirect taxes on the remaining components."
+          }
+        ]
+      }
+    }
+  },
+  "issues": [
+    "series_code: All 311 rows have same value",
+    "value: Column contains numbers stored as strings",
+    "series_label: All 311 rows have same value",
+    "series_description: All 311 rows have same value"
+  ]
+}

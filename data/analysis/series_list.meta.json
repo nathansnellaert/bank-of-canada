@@ -1,0 +1,113 @@
+{
+  "meta": {
+    "asset_name": "series_list",
+    "source_path": "/Users/nathansnellaert/Documents/data-integrations/integrations/bank-of-canada/data/raw/series_list.csv",
+    "source_size_bytes": 2471784,
+    "detected_format": "csv",
+    "structure": "csv",
+    "root_key_path": null,
+    "record_count": 14938,
+    "is_compressed": false,
+    "last_processed": "2025-12-27T16:51:20.024280",
+    "error": null
+  },
+  "schema": {
+    "rows": 14938,
+    "columns": {
+      "name": {
+        "type": "string",
+        "unique": 14938,
+        "cardinality": 1.0,
+        "min_len": 3,
+        "max_len": 45,
+        "samples": [
+          "A.AGRI",
+          "A.BCNE",
+          "A.BCPI",
+          "A.ENER",
+          "A.FISH"
+        ]
+      },
+      "label": {
+        "type": "string",
+        "unique": 9817,
+        "cardinality": 0.657,
+        "min_len": 1,
+        "max_len": 251,
+        "samples": [
+          "Of which: Non-local",
+          "Total",
+          "Other",
+          "Ontario",
+          "Of which: Claims on banks"
+        ],
+        "issues": [
+          {
+            "type": "null_like_strings",
+            "message": "2 values look like nulls",
+            "examples": [
+              "None",
+              "NA"
+            ]
+          },
+          {
+            "type": "whitespace",
+            "message": "36 values have leading/trailing whitespace",
+            "example": "'Status\\xa0'"
+          }
+        ]
+      },
+      "description": {
+        "type": "string",
+        "nulls": 4884,
+        "null_pct": 32.7,
+        "unique": 5475,
+        "cardinality": 0.545,
+        "min_len": 1,
+        "max_len": 497,
+        "samples": [
+          "Past six months: Did you make any major purchases (excluding homes or financial investments) in the past six months? Please indicate which item you purchased. Next six months: Do you plan to make any major purchases (excluding homes or financial investments) in the next six months?",
+          "Twelve months from now, what do you think will have happened to the price of the following items? ",
+          "Which, if any, of the following actions are you taking, or planning to take, in light of your expectations of inflation (deflation) over the next two years?",
+          "What do you think is the most likely outlook for the Canadian economy over the next 12 months? ",
+          "Probability of moving: For example, what do you think is the percent chance that over the next 12 months you will move to a different primary residence (that is, the place where you usually live)? Probability of selling: What do you think is the percent chance that, over the next 12 months, you will put your primary residence on the market for sale? Buying intentions: Are you planning or thinking of buying a house or a condo now  or have you bought one during the last year?"
+        ],
+        "issues": [
+          {
+            "type": "null_like_strings",
+            "message": "77 values look like nulls",
+            "examples": [
+              "-",
+              "None"
+            ]
+          },
+          {
+            "type": "whitespace",
+            "message": "582 values have leading/trailing whitespace",
+            "example": "'Status\\xa0'"
+          }
+        ]
+      },
+      "link": {
+        "type": "string",
+        "unique": 14938,
+        "cardinality": 1.0,
+        "min_len": 44,
+        "max_len": 86,
+        "samples": [
+          "https://www.bankofcanada.ca/valet/series/A.AGRI",
+          "https://www.bankofcanada.ca/valet/series/A.BCNE",
+          "https://www.bankofcanada.ca/valet/series/A.BCPI",
+          "https://www.bankofcanada.ca/valet/series/A.ENER",
+          "https://www.bankofcanada.ca/valet/series/A.FISH"
+        ]
+      }
+    }
+  },
+  "issues": [
+    "label: 2 values look like nulls",
+    "label: 36 values have leading/trailing whitespace",
+    "description: 77 values look like nulls",
+    "description: 582 values have leading/trailing whitespace"
+  ]
+}

@@ -1,0 +1,109 @@
+{
+  "meta": {
+    "asset_name": "CEER_BROADN",
+    "source_path": "/Users/nathansnellaert/Documents/data-integrations/integrations/bank-of-canada/data/raw/series/CEER_BROADN.json",
+    "source_size_bytes": 1576181,
+    "detected_format": "json",
+    "structure": "array",
+    "root_key_path": null,
+    "record_count": 7039,
+    "is_compressed": false,
+    "last_processed": "2025-12-27T16:52:41.454568",
+    "error": null
+  },
+  "schema": {
+    "rows": 7039,
+    "columns": {
+      "date": {
+        "type": "timestamp[us]",
+        "unique": 7039,
+        "cardinality": 1.0,
+        "samples": [
+          "1999-01-01 00:00:00",
+          "1999-01-04 00:00:00",
+          "1999-01-05 00:00:00",
+          "1999-01-06 00:00:00",
+          "1999-01-07 00:00:00"
+        ]
+      },
+      "series_code": {
+        "type": "string",
+        "unique": 1,
+        "cardinality": 0.0,
+        "min_len": 11,
+        "max_len": 11,
+        "samples": [
+          "CEER_BROADN"
+        ],
+        "issues": [
+          {
+            "type": "single_value",
+            "message": "All 7039 rows have same value",
+            "value": "CEER_BROADN"
+          }
+        ]
+      },
+      "value": {
+        "type": "string",
+        "unique": 3085,
+        "cardinality": 0.438,
+        "min_len": 5,
+        "max_len": 6,
+        "samples": [
+          "116.68",
+          "117.42",
+          "117.17",
+          "117.21",
+          "117.56"
+        ],
+        "issues": [
+          {
+            "type": "numeric_as_string",
+            "message": "Column contains numbers stored as strings",
+            "example": "95.43"
+          }
+        ]
+      },
+      "series_label": {
+        "type": "string",
+        "unique": 1,
+        "cardinality": 0.0,
+        "min_len": 47,
+        "max_len": 47,
+        "samples": [
+          "Daily Nominal Canadian Effective Exchange Rates"
+        ],
+        "issues": [
+          {
+            "type": "single_value",
+            "message": "All 7039 rows have same value",
+            "value": "Daily Nominal Canadian Effective Exchange Rates"
+          }
+        ]
+      },
+      "series_description": {
+        "type": "string",
+        "unique": 1,
+        "cardinality": 0.0,
+        "min_len": 58,
+        "max_len": 58,
+        "samples": [
+          "Nominal Canadian Effective Exchange Rate (CEER) (1999=100)"
+        ],
+        "issues": [
+          {
+            "type": "single_value",
+            "message": "All 7039 rows have same value",
+            "value": "Nominal Canadian Effective Exchange Rate (CEER) (1999=100)"
+          }
+        ]
+      }
+    }
+  },
+  "issues": [
+    "series_code: All 7039 rows have same value",
+    "value: Column contains numbers stored as strings",
+    "series_label: All 7039 rows have same value",
+    "series_description: All 7039 rows have same value"
+  ]
+}

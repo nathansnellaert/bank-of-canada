@@ -1,0 +1,109 @@
+{
+  "meta": {
+    "asset_name": "CBC20210",
+    "source_path": "/Users/nathansnellaert/Documents/data-integrations/integrations/bank-of-canada/data/raw/series/CBC20210.json",
+    "source_size_bytes": 969543,
+    "detected_format": "json",
+    "structure": "array",
+    "root_key_path": null,
+    "record_count": 6507,
+    "is_compressed": false,
+    "last_processed": "2025-12-27T16:52:39.075442",
+    "error": null
+  },
+  "schema": {
+    "rows": 6507,
+    "columns": {
+      "date": {
+        "type": "timestamp[us]",
+        "unique": 6507,
+        "cardinality": 1.0,
+        "samples": [
+          "2001-01-01 00:00:00",
+          "2001-01-02 00:00:00",
+          "2001-01-03 00:00:00",
+          "2001-01-04 00:00:00",
+          "2001-01-05 00:00:00"
+        ]
+      },
+      "series_code": {
+        "type": "string",
+        "unique": 1,
+        "cardinality": 0.0,
+        "min_len": 8,
+        "max_len": 8,
+        "samples": [
+          "CBC20210"
+        ],
+        "issues": [
+          {
+            "type": "single_value",
+            "message": "All 6507 rows have same value",
+            "value": "CBC20210"
+          }
+        ]
+      },
+      "value": {
+        "type": "string",
+        "unique": 22,
+        "cardinality": 0.003,
+        "min_len": 4,
+        "max_len": 4,
+        "samples": [
+          "1.00",
+          "0.25",
+          "0.50",
+          "2.75",
+          "4.25"
+        ],
+        "issues": [
+          {
+            "type": "numeric_as_string",
+            "message": "Column contains numbers stored as strings",
+            "example": "5.75"
+          }
+        ]
+      },
+      "series_label": {
+        "type": "string",
+        "unique": 1,
+        "cardinality": 0.0,
+        "min_len": 6,
+        "max_len": 6,
+        "samples": [
+          "V39079"
+        ],
+        "issues": [
+          {
+            "type": "single_value",
+            "message": "All 6507 rows have same value",
+            "value": "V39079"
+          }
+        ]
+      },
+      "series_description": {
+        "type": "string",
+        "unique": 1,
+        "cardinality": 0.0,
+        "min_len": 29,
+        "max_len": 29,
+        "samples": [
+          "Target for the overnight rate"
+        ],
+        "issues": [
+          {
+            "type": "single_value",
+            "message": "All 6507 rows have same value",
+            "value": "Target for the overnight rate"
+          }
+        ]
+      }
+    }
+  },
+  "issues": [
+    "series_code: All 6507 rows have same value",
+    "value: Column contains numbers stored as strings",
+    "series_label: All 6507 rows have same value",
+    "series_description: All 6507 rows have same value"
+  ]
+}

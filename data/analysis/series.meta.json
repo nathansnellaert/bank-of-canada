@@ -1,0 +1,175 @@
+{
+  "meta": {
+    "asset_name": "series",
+    "source_path": "integrations/bank-of-canada/data/raw/series",
+    "source_size_bytes": 463750460,
+    "detected_format": "json",
+    "structure": "directory",
+    "root_key_path": "14938 files",
+    "record_count": 2540761,
+    "is_compressed": false,
+    "last_processed": "2025-12-07T12:00:23.750782",
+    "error": null
+  },
+  "schema": {
+    "rows": 2540761,
+    "columns": {
+      "date": {
+        "type": "string",
+        "unique": 24155,
+        "cardinality": 0.01,
+        "min_len": 4,
+        "max_len": 16,
+        "samples": [
+          "2024Q1",
+          "2023Q3",
+          "2023Q4",
+          "2024Q2",
+          "2024Q3"
+        ]
+      },
+      "series_code": {
+        "type": "string",
+        "unique": 12404,
+        "cardinality": 0.005,
+        "min_len": 3,
+        "max_len": 44,
+        "samples": [
+          "IEXE0101_RECIPROCAL",
+          "SAN_FONT20250113_C8_S3",
+          "SAN_FONT20250113_C4_S1",
+          "SAN_FONT20250113_C4_S2",
+          "SAN_FONT20250113_C4_S3"
+        ]
+      },
+      "value": {
+        "type": "string",
+        "nulls": 10,
+        "null_pct": 0.0,
+        "unique": 500359,
+        "cardinality": 0.197,
+        "min_len": 1,
+        "max_len": 19,
+        "samples": [
+          "0",
+          "0.0",
+          "0.25",
+          "1.00",
+          "0.000"
+        ],
+        "issues": [
+          {
+            "type": "multi_granularity_dates",
+            "message": "Mixed date granularities: ['yearly', 'monthly_compact', 'daily', 'daily_compact']",
+            "granularities": [
+              {
+                "granularity": "yearly",
+                "format": "YYYY",
+                "example": "1300"
+              },
+              {
+                "granularity": "monthly_compact",
+                "format": "YYYYMM",
+                "example": "107464"
+              },
+              {
+                "granularity": "daily",
+                "format": "YYYY-MM-DD",
+                "example": "2020-05-04"
+              },
+              {
+                "granularity": "daily_compact",
+                "format": "YYYYMMDD",
+                "example": "13296452"
+              }
+            ]
+          },
+          {
+            "type": "numeric_as_string",
+            "message": "Column contains numbers stored as strings",
+            "example": "107.85"
+          }
+        ]
+      },
+      "series_label": {
+        "type": "string",
+        "unique": 8515,
+        "cardinality": 0.003,
+        "min_len": 1,
+        "max_len": 251,
+        "samples": [
+          "Total",
+          "Of which: Non-local",
+          "CAD/USD Noon Rate",
+          "Canadian dollar (left scale)",
+          "Other"
+        ],
+        "issues": [
+          {
+            "type": "null_like_strings",
+            "message": "35 values look like nulls",
+            "examples": [
+              "NA"
+            ]
+          },
+          {
+            "type": "whitespace",
+            "message": "5092 values have leading/trailing whitespace",
+            "example": "'Estimated variable mortgage rate '"
+          }
+        ]
+      },
+      "series_description": {
+        "type": "string",
+        "unique": 5054,
+        "cardinality": 0.002,
+        "min_len": 0,
+        "max_len": 497,
+        "samples": [
+          "",
+          "-",
+          "Government of Canada benchmark bond yields",
+          "Government of Canada marketable bonds - Average yield",
+          "U.S. dollar (noon)"
+        ],
+        "issues": [
+          {
+            "type": "null_like_strings",
+            "message": "44469 values look like nulls",
+            "examples": [
+              "-",
+              "None"
+            ]
+          },
+          {
+            "type": "whitespace",
+            "message": "33573 values have leading/trailing whitespace",
+            "example": "' '"
+          }
+        ]
+      },
+      "_source_file": {
+        "type": "string",
+        "unique": 12404,
+        "cardinality": 0.005,
+        "min_len": 8,
+        "max_len": 49,
+        "samples": [
+          "IEXE0101_RECIPROCAL.json",
+          "SAN_FONT20250113_C8_S3.json",
+          "SAN_FONT20250113_C4_S1.json",
+          "SAN_FONT20250113_C4_S2.json",
+          "SAN_FONT20250113_C4_S3.json"
+        ]
+      }
+    }
+  },
+  "issues": [
+    "value: Mixed date granularities: ['yearly', 'monthly_compact', 'daily', 'daily_compact']",
+    "value: Column contains numbers stored as strings",
+    "series_label: 35 values look like nulls",
+    "series_label: 5092 values have leading/trailing whitespace",
+    "series_description: 44469 values look like nulls",
+    "series_description: 33573 values have leading/trailing whitespace"
+  ]
+}
