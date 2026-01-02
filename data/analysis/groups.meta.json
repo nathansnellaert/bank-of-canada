@@ -2,17 +2,17 @@
   "meta": {
     "asset_name": "groups",
     "source_path": "/Users/nathansnellaert/Documents/data-integrations/integrations/bank-of-canada/data/raw/groups.json",
-    "source_size_bytes": 5730439,
+    "source_size_bytes": 5743245,
     "detected_format": "json",
     "structure": "array",
     "root_key_path": null,
-    "record_count": 2175,
+    "record_count": 2191,
     "is_compressed": false,
-    "last_processed": "2025-12-27T16:51:21.314485",
+    "last_processed": "2026-01-01T19:54:16.964595",
     "error": null
   },
   "schema": {
-    "rows": 2175,
+    "rows": 2191,
     "columns": {
       "terms_url": {
         "type": "string",
@@ -26,15 +26,15 @@
         "issues": [
           {
             "type": "single_value",
-            "message": "All 2175 rows have same value",
+            "message": "All 2191 rows have same value",
             "value": "https://www.bankofcanada.ca/terms/"
           }
         ]
       },
       "groupDetails_description": {
         "type": "string",
-        "unique": 1627,
-        "cardinality": 0.748,
+        "unique": 1634,
+        "cardinality": 0.746,
         "min_len": 0,
         "max_len": 4283,
         "samples": [
@@ -54,7 +54,7 @@
       },
       "groupDetails_groupSeries": {
         "type": "string",
-        "unique": 2142,
+        "unique": 2158,
         "cardinality": 0.985,
         "min_len": 85,
         "max_len": 249221,
@@ -68,7 +68,7 @@
       },
       "groupDetails_label": {
         "type": "string",
-        "unique": 2014,
+        "unique": 2028,
         "cardinality": 0.926,
         "min_len": 0,
         "max_len": 220,
@@ -89,7 +89,7 @@
       },
       "groupDetails_name": {
         "type": "string",
-        "unique": 2175,
+        "unique": 2191,
         "cardinality": 1.0,
         "min_len": 2,
         "max_len": 45,
@@ -104,7 +104,7 @@
     }
   },
   "issues": [
-    "terms_url: All 2175 rows have same value",
+    "terms_url: All 2191 rows have same value",
     "groupDetails_description: 34 values have leading/trailing whitespace",
     "groupDetails_label: 3 values have leading/trailing whitespace"
   ]

@@ -2,21 +2,21 @@
   "meta": {
     "asset_name": "series_list",
     "source_path": "/Users/nathansnellaert/Documents/data-integrations/integrations/bank-of-canada/data/raw/series_list.csv",
-    "source_size_bytes": 2471784,
+    "source_size_bytes": 2480031,
     "detected_format": "csv",
     "structure": "csv",
     "root_key_path": null,
-    "record_count": 14938,
+    "record_count": 14985,
     "is_compressed": false,
-    "last_processed": "2025-12-27T16:51:20.024280",
+    "last_processed": "2026-01-01T19:54:16.698701",
     "error": null
   },
   "schema": {
-    "rows": 14938,
+    "rows": 14985,
     "columns": {
       "name": {
         "type": "string",
-        "unique": 14938,
+        "unique": 14985,
         "cardinality": 1.0,
         "min_len": 3,
         "max_len": 45,
@@ -30,8 +30,8 @@
       },
       "label": {
         "type": "string",
-        "unique": 9817,
-        "cardinality": 0.657,
+        "unique": 9832,
+        "cardinality": 0.656,
         "min_len": 1,
         "max_len": 251,
         "samples": [
@@ -60,9 +60,9 @@
       "description": {
         "type": "string",
         "nulls": 4884,
-        "null_pct": 32.7,
-        "unique": 5475,
-        "cardinality": 0.545,
+        "null_pct": 32.6,
+        "unique": 5515,
+        "cardinality": 0.546,
         "min_len": 1,
         "max_len": 497,
         "samples": [
@@ -90,7 +90,7 @@
       },
       "link": {
         "type": "string",
-        "unique": 14938,
+        "unique": 14985,
         "cardinality": 1.0,
         "min_len": 44,
         "max_len": 86,

@@ -1,18 +1,18 @@
 {
   "meta": {
     "asset_name": "series",
-    "source_path": "integrations/bank-of-canada/data/raw/series",
-    "source_size_bytes": 463750460,
+    "source_path": "/Users/nathansnellaert/Documents/data-integrations/integrations/bank-of-canada/data/raw/series",
+    "source_size_bytes": 463815725,
     "detected_format": "json",
     "structure": "directory",
     "root_key_path": "14938 files",
-    "record_count": 2540761,
+    "record_count": 2541098,
     "is_compressed": false,
-    "last_processed": "2025-12-07T12:00:23.750782",
+    "last_processed": "2026-01-01T19:53:31.043984",
     "error": null
   },
   "schema": {
-    "rows": 2540761,
+    "rows": 2541098,
     "columns": {
       "date": {
         "type": "string",
@@ -46,7 +46,7 @@
         "type": "string",
         "nulls": 10,
         "null_pct": 0.0,
-        "unique": 500359,
+        "unique": 500372,
         "cardinality": 0.197,
         "min_len": 1,
         "max_len": 19,
@@ -114,7 +114,7 @@
           },
           {
             "type": "whitespace",
-            "message": "5092 values have leading/trailing whitespace",
+            "message": "5095 values have leading/trailing whitespace",
             "example": "'Estimated variable mortgage rate '"
           }
         ]
@@ -143,7 +143,7 @@
           },
           {
             "type": "whitespace",
-            "message": "33573 values have leading/trailing whitespace",
+            "message": "33576 values have leading/trailing whitespace",
             "example": "' '"
           }
         ]
@@ -168,8 +168,8 @@
     "value: Mixed date granularities: ['yearly', 'monthly_compact', 'daily', 'daily_compact']",
     "value: Column contains numbers stored as strings",
     "series_label: 35 values look like nulls",
-    "series_label: 5092 values have leading/trailing whitespace",
+    "series_label: 5095 values have leading/trailing whitespace",
     "series_description: 44469 values look like nulls",
-    "series_description: 33573 values have leading/trailing whitespace"
+    "series_description: 33576 values have leading/trailing whitespace"
   ]
 }

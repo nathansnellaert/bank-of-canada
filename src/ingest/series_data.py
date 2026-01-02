@@ -95,7 +95,7 @@ def run():
         last_date = state.get(series_code, {}).get("last_date")
         if not last_date and existing_obs:
             # Filter out invalid dates (headers, "date", "REVISIONS", etc.)
-            valid_dates = [obs["date"] for obs in existing_obs if obs["date"] and obs["date"][0].isdigit()]
+            valid_dates = [obs["date"] for obs in existing_obs if obs["date"] and '-' in obs["date"]]
             if valid_dates:
                 last_date = max(valid_dates)
 
@@ -122,8 +122,8 @@ def run():
             obs['series_description'] = series.get('description', '')
 
         # Merge new observations, deduplicating by date (only valid dates)
-        existing_dates = {obs["date"] for obs in existing_obs if obs["date"] and obs["date"][0].isdigit()}
-        new_unique = [obs for obs in new_obs if obs["date"] and obs["date"][0].isdigit() and obs["date"] not in existing_dates]
+        existing_dates = {obs["date"] for obs in existing_obs if obs["date"] and '-' in obs["date"]}
+        new_unique = [obs for obs in new_obs if obs["date"] and '-' in obs["date"] and obs["date"] not in existing_dates]
         all_obs = existing_obs + new_unique
 
         if not new_unique:
@@ -134,7 +134,7 @@ def run():
             json.dump(all_obs, f)
 
         # Update state with new last_date (filter out invalid dates)
-        valid_new_dates = [obs["date"] for obs in new_obs if obs["date"] and obs["date"][0].isdigit()]
+        valid_new_dates = [obs["date"] for obs in new_obs if obs["date"] and '-' in obs["date"]]
         if not valid_new_dates:
             continue
         new_last_date = max(valid_new_dates)
