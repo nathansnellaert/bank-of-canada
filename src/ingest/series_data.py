@@ -93,6 +93,9 @@ def run():
 
         # Get last_date from state, or derive from existing data
         last_date = state.get(series_code, {}).get("last_date")
+        # Skip invalid formats (e.g. times like "13:00:00" instead of dates)
+        if last_date and '-' not in last_date:
+            last_date = None
         if not last_date and existing_obs:
             # Filter out invalid dates (headers, "date", "REVISIONS", etc.)
             valid_dates = [obs["date"] for obs in existing_obs if obs["date"] and '-' in obs["date"]]
