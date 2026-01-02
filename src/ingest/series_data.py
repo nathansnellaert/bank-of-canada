@@ -18,12 +18,19 @@ def convert_quarterly_to_iso(date_str: str) -> str:
     return date_str
 
 
-def fetch_series_observations(series_code: str, start_date: str) -> list:
+def fetch_series_observations(series_code: str, start_date: str) -> list | None:
+    """Fetch observations for a series. Returns None if the series is inaccessible."""
     url = f"https://www.bankofcanada.ca/valet/observations/{series_code}/csv"
     api_start_date = convert_quarterly_to_iso(start_date)
     params = {"start_date": api_start_date}
 
     response = get(url, params=params, timeout=30.0)
+
+    # Handle API errors gracefully - some series may be restricted or unavailable
+    if response.status_code == 403:
+        return None  # Series is forbidden/restricted
+    if response.status_code == 404:
+        return None  # Series doesn't exist
     response.raise_for_status()
 
     lines = response.text.split('\n')
@@ -80,6 +87,7 @@ def run():
 
     updated_count = 0
     skipped_count = 0
+    inaccessible_count = 0
 
     for series in tqdm(series_list, desc="Fetching series data"):
         series_code = series['name']
@@ -112,6 +120,10 @@ def run():
 
         new_obs = fetch_series_observations(series_code, start_date)
 
+        if new_obs is None:
+            inaccessible_count += 1
+            continue
+
         if not new_obs:
             skipped_count += 1
             continue
@@ -143,4 +155,4 @@ def run():
 
         updated_count += 1
 
-    print(f"Updated {updated_count} series, {skipped_count} already up to date")
+    print(f"Updated {updated_count} series, {skipped_count} up to date, {inaccessible_count} inaccessible")
