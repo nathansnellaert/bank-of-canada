@@ -51,15 +51,16 @@
     "effective_exchange_rate": {
       "title": "Bank of Canada: Canadian Effective Exchange Rate Index (CEER)",
       "description": "Bank of Canada trade-weighted index measuring the Canadian dollar against a basket of currencies. A higher CEER means CAD has appreciated relative to trading partners.",
-      "frequency": "daily",
+      "frequency": "mixed",
       "series": {
-        "CEER_BROAD_D_N": {"column": "ceer_broad_nominal_daily", "description": "Daily nominal CEER against all trading partners weighted by bilateral trade"},
-        "CEER_NARROW_D_N": {"column": "ceer_narrow_nominal_daily", "description": "Daily nominal CEER against major currencies only (USD, EUR, JPY, GBP, etc.)"},
-        "CEER_XUS_D_N": {"column": "ceer_ex_us_nominal_daily", "description": "Daily nominal CEER excluding US dollar - useful for non-US trade analysis"},
-        "CEER_BROAD_M_N": {"column": "ceer_broad_nominal_monthly", "description": "Monthly average nominal CEER against all trading partners"},
-        "CEER_BROAD_M_R": {"column": "ceer_broad_real_monthly", "description": "Monthly real CEER adjusted for inflation differentials between Canada and partners"},
-        "CEER_NARROW_M_R": {"column": "ceer_narrow_real_monthly", "description": "Monthly real CEER against major currencies, inflation-adjusted"},
-        "CEER_XUS_M_R": {"column": "ceer_ex_us_real_monthly", "description": "Monthly real CEER excluding USD, shows competitiveness vs non-US partners"}
+        "CEER_BROADN": {"column": "ceer_broad_nominal_daily", "description": "Daily nominal CEER against all trading partners weighted by bilateral trade"},
+        "CEER_MCN": {"column": "ceer_major_currencies_daily", "description": "Daily nominal CEER against major currencies only (USD, EUR, JPY, GBP, etc.)"},
+        "CEER_OITPN": {"column": "ceer_other_partners_daily", "description": "Daily nominal CEER against other important trading partners"},
+        "CEER_BROADN_XUS": {"column": "ceer_ex_us_nominal_daily", "description": "Daily nominal CEER excluding US dollar"},
+        "CEER_BROADNM": {"column": "ceer_broad_nominal_monthly", "description": "Monthly average nominal CEER against all trading partners"},
+        "CEER_BROADM": {"column": "ceer_broad_real_monthly", "description": "Monthly real CEER adjusted for inflation differentials between Canada and partners"},
+        "CEER_MCM": {"column": "ceer_major_currencies_real_monthly", "description": "Monthly real CEER against major currencies, inflation-adjusted"},
+        "CEER_BROAD_XUSM": {"column": "ceer_ex_us_real_monthly", "description": "Monthly real CEER excluding USD"}
       }
     },
 
@@ -83,13 +84,14 @@
       "description": "Bank of Canada CORRA benchmark overnight interest rate for Canadian dollar markets, measuring the cost of overnight funding secured by Government of Canada bonds.",
       "frequency": "daily",
       "series": {
-        "CORRA": {"column": "corra_rate", "description": "Daily CORRA rate - the volume-weighted median repo rate for overnight transactions"},
+        "CORRA_WEIGHTED_MEAN_RATE": {"column": "corra_rate", "description": "Daily CORRA rate - the volume-weighted median repo rate for overnight transactions"},
         "CORRA.COMPOUNDED.INDEX": {"column": "corra_compounded_index", "description": "Compounded CORRA index for calculating interest on CORRA-linked instruments"},
         "CORRA_TOTAL_VOLUME": {"column": "total_volume", "description": "Total dollar volume of all overnight repo trades used in CORRA calculation"},
         "CORRA_TRIMMED_VOLUME": {"column": "trimmed_volume", "description": "Trimmed volume after removing outlier trades from CORRA calculation"},
         "CORRA_RATE_AT_PERCENTILE_5": {"column": "rate_p5", "description": "5th percentile of overnight repo rates - lower bound of typical trading range"},
         "CORRA_RATE_AT_PERCENTILE_25": {"column": "rate_p25", "description": "25th percentile of overnight repo rates"},
-        "CORRA_RATE_AT_PERCENTILE_75": {"column": "rate_p75", "description": "75th percentile of overnight repo rates - upper bound of typical trading range"}
+        "CORRA_RATE_AT_PERCENTILE_75": {"column": "rate_p75", "description": "75th percentile of overnight repo rates - upper bound of typical trading range"},
+        "CORRA_RATE_AT_PERCENTILE_95": {"column": "rate_p95", "description": "95th percentile of overnight repo rates - upper bound of trading range"}
       }
     },
 
@@ -148,10 +150,15 @@
       "description": "Bank of Canada quarterly survey of Canadian financial institutions on lending conditions and credit demand. Key indicator of credit availability in the economy.",
       "frequency": "quarterly",
       "series": {
-        "SLOS_BUSINESS_PRICE": {"column": "business_lending_price", "description": "Net percentage of lenders tightening pricing on business loans"},
-        "SLOS_BUSINESS_NONPRICE": {"column": "business_lending_nonprice", "description": "Net percentage tightening non-price terms (collateral, covenants) for businesses"},
-        "SLOS_MORTGAGE": {"column": "mortgage_lending", "description": "Net percentage of lenders tightening mortgage lending conditions"},
-        "SLOS_CONSUMER": {"column": "consumer_lending", "description": "Net percentage tightening consumer lending (credit cards, auto loans)"}
+        "SLOS_BUS_LEND": {"column": "business_lending_overall", "description": "Overall business lending conditions (average of price and non-price)"},
+        "SLOS_BUS_LEND_PC": {"column": "business_lending_price", "description": "Price lending conditions for business lending"},
+        "SLOS_BUS_LEND_NP": {"column": "business_lending_nonprice", "description": "Non-price lending conditions for business lending"},
+        "SLOS_ML_LEND": {"column": "mortgage_lending_overall", "description": "Mortgage lending conditions (insured, uninsured, HELOCs combined)"},
+        "SLOS_ML_LEND_PC": {"column": "mortgage_lending_price", "description": "Price lending conditions for mortgage lending"},
+        "SLOS_ML_LEND_NP": {"column": "mortgage_lending_nonprice", "description": "Non-price lending conditions for mortgage lending"},
+        "SLOS_NML_LEND": {"column": "consumer_lending_overall", "description": "Non-mortgage consumer lending conditions (auto, other)"},
+        "SLOS_NML_LEND_PC": {"column": "consumer_lending_price", "description": "Price lending conditions for consumer lending"},
+        "SLOS_NML_LEND_NP": {"column": "consumer_lending_nonprice", "description": "Non-price lending conditions for consumer lending"}
       }
     },
 

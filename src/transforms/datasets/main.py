@@ -13,8 +13,9 @@ import pyarrow as pa
 from pathlib import Path
 from collections import defaultdict
 
-from subsets_utils import upload_data, publish
+from subsets_utils import upload_data, publish, load_raw_json
 from subsets_utils.environment import get_data_dir
+from subsets_utils.r2 import is_cloud_mode
 
 MAPPINGS_DIR = Path(__file__).parent.parent.parent / "mappings"
 
@@ -63,15 +64,25 @@ def load_mapping() -> dict:
 
 
 def load_raw_series(series_code: str) -> list[dict]:
-    """Load raw data for a single series from data/raw/series/{code}.json"""
-    raw_dir = Path(get_data_dir()) / "raw" / "series"
-    series_path = raw_dir / f"{series_code}.json"
+    """Load raw data for a single series.
 
-    if not series_path.exists():
-        return []
+    In cloud mode: loads from R2 via load_raw_json
+    In local mode: loads from data/raw/series/{code}.json
+    """
+    if is_cloud_mode():
+        try:
+            return load_raw_json(f"series/{series_code}")
+        except FileNotFoundError:
+            return []
+    else:
+        raw_dir = Path(get_data_dir()) / "raw" / "series"
+        series_path = raw_dir / f"{series_code}.json"
 
-    with open(series_path) as f:
-        return json.load(f)
+        if not series_path.exists():
+            return []
+
+        with open(series_path) as f:
+            return json.load(f)
 
 
 def transform_dataset(dataset_id: str, config: dict) -> pa.Table | None:

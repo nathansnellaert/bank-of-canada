@@ -5,8 +5,10 @@ import json
 from datetime import datetime, timedelta
 from pathlib import Path
 from tqdm import tqdm
-from subsets_utils import get, load_raw_file, load_state, save_state
+from subsets_utils import get, load_raw_file, load_raw_json, save_raw_json, load_state, save_state
 from subsets_utils.environment import get_data_dir
+from subsets_utils.r2 import is_cloud_mode
+from utils.csv_parser import parse_series_csv
 
 
 def convert_quarterly_to_iso(date_str: str) -> str:
@@ -59,20 +61,40 @@ def fetch_series_observations(series_code: str, start_date: str) -> list | None:
     return observations
 
 
-def parse_series_csv(csv_text):
-    lines = csv_text.split('\n')
-    data_start = -1
-    for i, line in enumerate(lines):
-        if line.strip() == 'SERIES':
-            data_start = i + 1
-            break
+def load_series_data(series_code: str) -> list:
+    """Load existing observations for a series.
 
-    if data_start == -1:
-        raise ValueError("Could not find SERIES section in response")
+    In cloud mode: loads from R2 via save_raw_json/load_raw_json
+    In local mode: loads from data/raw/series/{code}.json
+    """
+    if is_cloud_mode():
+        try:
+            return load_raw_json(f"series/{series_code}")
+        except FileNotFoundError:
+            return []
+    else:
+        series_dir = Path(get_data_dir()) / "raw" / "series"
+        series_path = series_dir / f"{series_code}.json"
+        if series_path.exists():
+            with open(series_path) as f:
+                return json.load(f)
+        return []
 
-    csv_content = '\n'.join(lines[data_start:])
-    reader = csv.DictReader(io.StringIO(csv_content))
-    return list(reader)
+
+def save_series_data(series_code: str, data: list) -> None:
+    """Save observations for a series.
+
+    In cloud mode: saves to R2 via save_raw_json
+    In local mode: saves to data/raw/series/{code}.json
+    """
+    if is_cloud_mode():
+        save_raw_json(data, f"series/{series_code}")
+    else:
+        series_dir = Path(get_data_dir()) / "raw" / "series"
+        series_dir.mkdir(parents=True, exist_ok=True)
+        series_path = series_dir / f"{series_code}.json"
+        with open(series_path, 'w') as f:
+            json.dump(data, f)
 
 
 def run():
@@ -82,22 +104,15 @@ def run():
 
     state = load_state("series_data")
 
-    series_dir = Path(get_data_dir()) / "raw" / "series"
-    series_dir.mkdir(parents=True, exist_ok=True)
-
     updated_count = 0
     skipped_count = 0
     inaccessible_count = 0
 
     for series in tqdm(series_list, desc="Fetching series data"):
         series_code = series['name']
-        series_path = series_dir / f"{series_code}.json"
 
-        # Load existing observations if file exists
-        existing_obs = []
-        if series_path.exists():
-            with open(series_path) as f:
-                existing_obs = json.load(f)
+        # Load existing observations (from R2 in cloud mode)
+        existing_obs = load_series_data(series_code)
 
         # Get last_date from state, or derive from existing data
         last_date = state.get(series_code, {}).get("last_date")
@@ -142,8 +157,8 @@ def run():
             skipped_count += 1
             continue
 
-        with open(series_path, 'w') as f:
-            json.dump(all_obs, f)
+        # Save observations (to R2 in cloud mode)
+        save_series_data(series_code, all_obs)
 
         # Update state with new last_date (filter out invalid dates)
         valid_new_dates = [obs["date"] for obs in new_obs if obs["date"] and '-' in obs["date"]]

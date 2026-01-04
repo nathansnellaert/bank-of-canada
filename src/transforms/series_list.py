@@ -1,26 +1,8 @@
 """Transform Bank of Canada series list to dataset."""
 
-import csv
-import io
 import pyarrow as pa
 from subsets_utils import load_raw_file, upload_data
-
-
-def parse_series_csv(csv_text):
-    """Parse series CSV to list of dicts."""
-    lines = csv_text.split('\n')
-    data_start = -1
-    for i, line in enumerate(lines):
-        if line.strip() == 'SERIES':
-            data_start = i + 1
-            break
-
-    if data_start == -1:
-        raise ValueError("Could not find SERIES section in response")
-
-    csv_content = '\n'.join(lines[data_start:])
-    reader = csv.DictReader(io.StringIO(csv_content))
-    return list(reader)
+from utils.csv_parser import parse_series_csv
 
 
 def run():
