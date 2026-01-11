@@ -5,6 +5,7 @@ import io
 import json
 import gzip
 import uuid
+import hashlib
 from datetime import datetime
 from pathlib import Path
 import pyarrow as pa
@@ -12,13 +13,77 @@ import pyarrow.parquet as pq
 from deltalake import write_deltalake, DeltaTable
 from . import debug
 from .environment import get_data_dir
-from .r2 import is_cloud_mode, upload_bytes, upload_file, download_bytes, get_storage_options, get_delta_table_uri, get_bucket_name, get_connector_name
+from .r2 import _is_cloud_mode, upload_bytes, upload_file, download_bytes, get_storage_options, get_delta_table_uri, get_bucket_name, get_connector_name
+
+
+def _compute_table_hash(table: pa.Table) -> str:
+    """Compute a stable hash of a PyArrow table for change detection."""
+    # Write to parquet bytes for consistent hashing
+    buffer = io.BytesIO()
+    pq.write_table(table, buffer, compression='snappy')
+    return hashlib.sha256(buffer.getvalue()).hexdigest()[:16]
+
+
+def _get_hash_state_key(dataset_name: str) -> str:
+    return f"_hash_{dataset_name}"
+
+
+def sync_data(data: pa.Table, dataset_name: str, mode: str = "overwrite") -> str | None:
+    """Sync a PyArrow table to a Delta table, only if data has changed.
+
+    Returns the table URI if data was synced, None if no changes detected.
+    """
+    if len(data) == 0:
+        print(f"No data to sync for {dataset_name}")
+        return None
+
+    # Compute hash of new data
+    new_hash = _compute_table_hash(data)
+
+    # Load existing hash from state
+    state = load_state(_get_hash_state_key(dataset_name))
+    old_hash = state.get("hash")
+
+    if old_hash == new_hash:
+        print(f"No changes detected for {dataset_name} (hash: {new_hash})")
+        return None
+
+    # Data has changed, upload it
+    size_mb = round(data.nbytes / 1024 / 1024, 2)
+    columns = ', '.join([f.name for f in data.schema])
+    print(f"Syncing {dataset_name}: {len(data)} rows, {len(data.schema)} cols ({columns}), {size_mb} MB")
+    if old_hash:
+        print(f"  Hash changed: {old_hash} -> {new_hash}")
+    else:
+        print(f"  New dataset (hash: {new_hash})")
+
+    if _is_cloud_mode():
+        table_uri = get_delta_table_uri(dataset_name)
+        storage_options = get_storage_options()
+    else:
+        table_uri = str(Path(get_data_dir()) / "subsets" / dataset_name)
+        storage_options = None
+
+    write_deltalake(table_uri, data, mode=mode, storage_options=storage_options,
+                    schema_mode="overwrite")
+
+    # Save new hash to state
+    save_state(_get_hash_state_key(dataset_name), {"hash": new_hash})
+
+    # Log output
+    null_counts = {col: data[col].null_count for col in data.column_names if data[col].null_count > 0}
+    debug.log_data_output(dataset_name=dataset_name, row_count=len(data), size_bytes=data.nbytes,
+                          columns=data.column_names, column_count=len(data.schema), null_counts=null_counts, mode=mode)
+    return table_uri
 
 
 # --- Delta table operations ---
 
 def upload_data(data: pa.Table, dataset_name: str, metadata: dict = None, mode: str = "append", merge_key: str = None) -> str:
     """Upload a PyArrow table to a Delta table."""
+    from .dag import track_write
+    track_write(f"subsets/{dataset_name}", rows=len(data))
+
     if mode not in ("append", "overwrite", "merge"):
         raise ValueError(f"Invalid mode '{mode}'. Must be 'append', 'overwrite', or 'merge'.")
     if mode == "merge" and not merge_key:
@@ -37,7 +102,7 @@ def upload_data(data: pa.Table, dataset_name: str, metadata: dict = None, mode: 
     table_name = metadata.get("title") if metadata else None
     table_description = json.dumps(metadata) if metadata else None
 
-    if is_cloud_mode():
+    if _is_cloud_mode():
         table_uri = get_delta_table_uri(dataset_name)
         storage_options = get_storage_options()
     else:
@@ -71,7 +136,7 @@ def upload_data(data: pa.Table, dataset_name: str, metadata: dict = None, mode: 
 
 def load_asset(asset_name: str) -> pa.Table:
     """Load a Delta table as PyArrow table."""
-    if is_cloud_mode():
+    if _is_cloud_mode():
         table_uri = get_delta_table_uri(asset_name)
         try:
             return DeltaTable(table_uri, storage_options=get_storage_options()).to_pyarrow_table()
@@ -103,7 +168,7 @@ def _state_key(asset: str) -> str:
 
 def load_state(asset: str) -> dict:
     """Load state for an asset."""
-    if is_cloud_mode():
+    if _is_cloud_mode():
         data = download_bytes(_state_key(asset))
         return json.loads(data.decode('utf-8')) if data else {}
     else:
@@ -116,7 +181,7 @@ def save_state(asset: str, state_data: dict) -> str:
     old_state = load_state(asset)
     state_data = {**state_data, '_metadata': {'updated_at': datetime.now().isoformat(), 'run_id': os.environ.get('RUN_ID', 'unknown')}}
 
-    if is_cloud_mode():
+    if _is_cloud_mode():
         uri = upload_bytes(json.dumps(state_data, indent=2).encode('utf-8'), _state_key(asset))
         debug.log_state_change(asset, old_state, state_data)
         return uri
@@ -143,7 +208,7 @@ def _raw_key(asset_id: str, ext: str) -> str:
 
 def save_raw_file(content: str | bytes, asset_id: str, extension: str = "txt") -> str:
     """Save raw file (CSV, XML, ZIP, etc.)."""
-    if is_cloud_mode():
+    if _is_cloud_mode():
         data = content.encode('utf-8') if isinstance(content, str) else content
         print(f"  -> R2: Saved {asset_id}.{extension}")
         return upload_bytes(data, _raw_key(asset_id, extension))
@@ -159,7 +224,7 @@ def save_raw_file(content: str | bytes, asset_id: str, extension: str = "txt") -
 
 def load_raw_file(asset_id: str, extension: str = "txt") -> str | bytes:
     """Load raw file."""
-    if is_cloud_mode():
+    if _is_cloud_mode():
         data = download_bytes(_raw_key(asset_id, extension))
         if data is None:
             raise FileNotFoundError(f"Raw asset '{asset_id}.{extension}' not found in R2.")
@@ -188,7 +253,7 @@ def save_raw_json(data: any, asset_id: str, compress: bool = False) -> str:
     else:
         content = json.dumps(data, indent=2).encode('utf-8')
 
-    if is_cloud_mode():
+    if _is_cloud_mode():
         print(f"  -> R2: Saved {asset_id}.{ext}")
         return upload_bytes(content, _raw_key(asset_id, ext))
     else:
@@ -200,7 +265,7 @@ def save_raw_json(data: any, asset_id: str, compress: bool = False) -> str:
 
 def load_raw_json(asset_id: str) -> any:
     """Load raw JSON data. Auto-detects compression."""
-    if is_cloud_mode():
+    if _is_cloud_mode():
         data = download_bytes(_raw_key(asset_id, "json"))
         if data:
             return json.loads(data.decode('utf-8'))
@@ -222,12 +287,15 @@ def load_raw_json(asset_id: str) -> any:
 
 def save_raw_parquet(data: pa.Table, asset_id: str, metadata: dict = None) -> str:
     """Save raw PyArrow table as Parquet."""
+    from .dag import track_write
+    track_write(f"raw/{asset_id}", rows=data.num_rows)
+
     if metadata:
         existing = data.schema.metadata or {}
         existing[b'asset_metadata'] = json.dumps(metadata).encode('utf-8')
         data = data.replace_schema_metadata(existing)
 
-    if is_cloud_mode():
+    if _is_cloud_mode():
         temp_path = f"/tmp/{uuid.uuid4()}.parquet"
         try:
             pq.write_table(data, temp_path, compression='snappy')
@@ -246,7 +314,10 @@ def save_raw_parquet(data: pa.Table, asset_id: str, metadata: dict = None) -> st
 
 def load_raw_parquet(asset_id: str) -> pa.Table:
     """Load raw Parquet file as PyArrow table."""
-    if is_cloud_mode():
+    from .dag import track_read
+    track_read(f"raw/{asset_id}")
+
+    if _is_cloud_mode():
         data = download_bytes(_raw_key(asset_id, "parquet"))
         if data is None:
             raise FileNotFoundError(f"Raw parquet asset '{asset_id}' not found in R2")
@@ -256,3 +327,13 @@ def load_raw_parquet(asset_id: str) -> pa.Table:
         if not path.exists():
             raise FileNotFoundError(f"Raw parquet asset '{asset_id}' not found at {path}")
         return pq.read_table(path)
+
+
+def get_raw_path(asset_id: str, ext: str = "parquet") -> str:
+    """Get path/URI for a raw asset.
+
+    Returns S3 URI in cloud mode, local path otherwise.
+    """
+    if _is_cloud_mode():
+        return f"s3://{get_bucket_name()}/{_raw_key(asset_id, ext)}"
+    return str(_raw_path(asset_id, ext))

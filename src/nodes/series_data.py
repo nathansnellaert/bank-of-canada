@@ -1,17 +1,45 @@
+"""Ingest Bank of Canada series observations.
 
+This node:
+1. Reads the series list to know what series to fetch
+2. Incrementally fetches observations for each series
+3. Saves per-series JSON files to raw/
+4. Tracks fetched series in state for the datasets transform to diff against
+
+State tracks:
+- series_states: {series_code: {"last_date": "YYYY-MM-DD"}} for incremental updates
+- fetched_series: [series_code, ...] list of all series that have been fetched
+"""
 import csv
 import io
-import json
+import time
 from datetime import datetime, timedelta
-from pathlib import Path
 from tqdm import tqdm
 from subsets_utils import get, load_raw_file, load_raw_json, save_raw_json, load_state, save_state
-from subsets_utils.environment import get_data_dir
-from subsets_utils.r2 import is_cloud_mode
-from utils.csv_parser import parse_series_csv
+
+
+GH_ACTIONS_MAX_RUN_SECONDS = 5.5 * 60 * 60
+
+
+def parse_series_csv(csv_text: str) -> list[dict]:
+    """Parse Bank of Canada series CSV format."""
+    lines = csv_text.split('\n')
+    data_start = -1
+    for i, line in enumerate(lines):
+        if line.strip() == 'SERIES':
+            data_start = i + 1
+            break
+
+    if data_start == -1:
+        raise ValueError("Could not find SERIES section in response")
+
+    csv_content = '\n'.join(lines[data_start:])
+    reader = csv.DictReader(io.StringIO(csv_content))
+    return list(reader)
 
 
 def convert_quarterly_to_iso(date_str: str) -> str:
+    """Convert quarterly date format for API call."""
     if 'Q' in date_str:
         year, quarter = date_str.split('Q')
         quarter_to_month = {'1': '01', '2': '04', '3': '07', '4': '10'}
@@ -62,60 +90,50 @@ def fetch_series_observations(series_code: str, start_date: str) -> list | None:
 
 
 def load_series_data(series_code: str) -> list:
-    """Load existing observations for a series.
-
-    In cloud mode: loads from R2 via save_raw_json/load_raw_json
-    In local mode: loads from data/raw/series/{code}.json
-    """
-    if is_cloud_mode():
-        try:
-            return load_raw_json(f"series/{series_code}")
-        except FileNotFoundError:
-            return []
-    else:
-        series_dir = Path(get_data_dir()) / "raw" / "series"
-        series_path = series_dir / f"{series_code}.json"
-        if series_path.exists():
-            with open(series_path) as f:
-                return json.load(f)
+    """Load existing observations for a series."""
+    try:
+        return load_raw_json(f"series/{series_code}")
+    except FileNotFoundError:
         return []
 
 
 def save_series_data(series_code: str, data: list) -> None:
-    """Save observations for a series.
-
-    In cloud mode: saves to R2 via save_raw_json
-    In local mode: saves to data/raw/series/{code}.json
-    """
-    if is_cloud_mode():
-        save_raw_json(data, f"series/{series_code}")
-    else:
-        series_dir = Path(get_data_dir()) / "raw" / "series"
-        series_dir.mkdir(parents=True, exist_ok=True)
-        series_path = series_dir / f"{series_code}.json"
-        with open(series_path, 'w') as f:
-            json.dump(data, f)
+    """Save observations for a series."""
+    save_raw_json(data, f"series/{series_code}")
 
 
-def run():
+def run() -> bool:
+    """Fetch series observations incrementally. Returns True if more work to do."""
+    print("Ingesting series data...")
+    start_time = time.time()
+
+    # Load series list
     csv_text = load_raw_file("series_list", extension="csv")
     series_list = parse_series_csv(csv_text)
-    print(f"Loaded {len(series_list)} series from raw cache")
+    print(f"  {len(series_list)} series in catalog")
 
+    # Load state
     state = load_state("series_data")
+    series_states = state.get("series_states", {})
+    fetched_series = set(state.get("fetched_series", []))
 
     updated_count = 0
     skipped_count = 0
     inaccessible_count = 0
 
     for series in tqdm(series_list, desc="Fetching series data"):
+        # Time budget check before each series
+        if time.time() - start_time >= GH_ACTIONS_MAX_RUN_SECONDS:
+            print(f"  Time budget exhausted")
+            return True
+
         series_code = series['name']
 
         # Load existing observations (from R2 in cloud mode)
         existing_obs = load_series_data(series_code)
 
         # Get last_date from state, or derive from existing data
-        last_date = state.get(series_code, {}).get("last_date")
+        last_date = series_states.get(series_code, {}).get("last_date")
         if not last_date and existing_obs:
             # Filter out invalid dates (headers, "date", "REVISIONS", etc.)
             valid_dates = [obs["date"] for obs in existing_obs if obs["date"] and '-' in obs["date"]]
@@ -141,6 +159,8 @@ def run():
 
         if not new_obs:
             skipped_count += 1
+            # Still mark as fetched even if no new data
+            fetched_series.add(series_code)
             continue
 
         # Add metadata to new observations
@@ -155,19 +175,28 @@ def run():
 
         if not new_unique:
             skipped_count += 1
+            fetched_series.add(series_code)
             continue
 
         # Save observations (to R2 in cloud mode)
         save_series_data(series_code, all_obs)
 
-        # Update state with new last_date (filter out invalid dates)
+        # Update state with new last_date
         valid_new_dates = [obs["date"] for obs in new_obs if obs["date"] and '-' in obs["date"]]
-        if not valid_new_dates:
-            continue
-        new_last_date = max(valid_new_dates)
-        state[series_code] = {"last_date": new_last_date}
-        save_state("series_data", state)
+        if valid_new_dates:
+            new_last_date = max(valid_new_dates)
+            series_states[series_code] = {"last_date": new_last_date}
+
+        # Track that this series has been fetched
+        fetched_series.add(series_code)
+
+        # Save state after each series for resumability
+        save_state("series_data", {
+            "series_states": series_states,
+            "fetched_series": sorted(fetched_series)
+        })
 
         updated_count += 1
 
-    print(f"Updated {updated_count} series, {skipped_count} up to date, {inaccessible_count} inaccessible")
+    print(f"  Updated {updated_count} series, {skipped_count} up to date, {inaccessible_count} inaccessible")
+    return False

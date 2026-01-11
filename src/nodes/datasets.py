@@ -1,23 +1,22 @@
-"""
-Transform Bank of Canada raw series data into granular datasets.
+"""Transform Bank of Canada series data into wide-format datasets.
 
-Uses the mapping configuration in src/mappings/datasets.json to:
-1. Load raw series data from data/raw/series/*.json
-2. Pivot from skinny format to wide format (date as index, series as columns)
-3. Upload each dataset as a separate Delta table
-"""
+This node:
+1. Loads the mapping configuration from mappings/datasets.json
+2. For each dataset in the mapping, loads the relevant raw series data
+3. Pivots from skinny format to wide format (date as index, series as columns)
+4. Uploads each dataset as a separate Delta table
 
+Uses state diff to only process series that have been updated since last transform.
+"""
 import json
 import re
 import pyarrow as pa
 from pathlib import Path
 from collections import defaultdict
+from subsets_utils import load_raw_json, load_state, save_state, upload_data, sync_metadata, validate
 
-from subsets_utils import upload_data, publish, load_raw_json
-from subsets_utils.environment import get_data_dir
-from subsets_utils.r2 import is_cloud_mode
 
-MAPPINGS_DIR = Path(__file__).parent.parent.parent / "mappings"
+MAPPINGS_DIR = Path(__file__).parent.parent / "mappings"
 
 
 def normalize_date(date: str, frequency: str) -> str:
@@ -64,25 +63,64 @@ def load_mapping() -> dict:
 
 
 def load_raw_series(series_code: str) -> list[dict]:
-    """Load raw data for a single series.
+    """Load raw data for a single series."""
+    try:
+        return load_raw_json(f"series/{series_code}")
+    except FileNotFoundError:
+        return []
 
-    In cloud mode: loads from R2 via load_raw_json
-    In local mode: loads from data/raw/series/{code}.json
-    """
-    if is_cloud_mode():
-        try:
-            return load_raw_json(f"series/{series_code}")
-        except FileNotFoundError:
-            return []
-    else:
-        raw_dir = Path(get_data_dir()) / "raw" / "series"
-        series_path = raw_dir / f"{series_code}.json"
 
-        if not series_path.exists():
-            return []
+def test_wide_table(table: pa.Table, dataset_id: str, config: dict) -> None:
+    """Validate a wide-format dataset."""
+    # Build expected columns
+    expected_columns = {"date": "string"}
+    for series_config in config["series"].values():
+        expected_columns[series_config["column"]] = "double"
 
-        with open(series_path) as f:
-            return json.load(f)
+    # Validate schema and basic constraints
+    validate(table, {
+        "columns": expected_columns,
+        "not_null": ["date"],
+        "min_rows": 1,
+    })
+
+    # Validate date format based on frequency
+    frequency = config.get("frequency", "")
+    dates = table.column("date").to_pylist()
+
+    if frequency == "daily":
+        # Expect YYYY-MM-DD format
+        for d in dates[:10]:  # Sample check
+            assert len(d) == 10, f"Daily date should be YYYY-MM-DD: {d}"
+            assert d[4] == "-" and d[7] == "-", f"Invalid daily date format: {d}"
+
+    elif frequency == "monthly":
+        # Expect YYYY-MM format
+        for d in dates[:10]:
+            assert len(d) == 7, f"Monthly date should be YYYY-MM: {d}"
+            assert d[4] == "-", f"Invalid monthly date format: {d}"
+
+    elif frequency == "quarterly":
+        # Expect YYYY-QN format
+        for d in dates[:10]:
+            assert "Q" in d, f"Quarterly date should contain Q: {d}"
+
+    elif frequency == "annual":
+        # Expect YYYY format
+        for d in dates[:10]:
+            assert len(d) == 4, f"Annual date should be YYYY: {d}"
+            assert d.isdigit(), f"Annual date should be numeric: {d}"
+
+    # Check that we have data in at least some columns (not all null)
+    non_date_cols = [c for c in table.column_names if c != "date"]
+    has_data = False
+    for col in non_date_cols:
+        non_null_count = len(table) - table.column(col).null_count
+        if non_null_count > 0:
+            has_data = True
+            break
+
+    assert has_data, f"Dataset {dataset_id} has no data in any column"
 
 
 def transform_dataset(dataset_id: str, config: dict) -> pa.Table | None:
@@ -172,7 +210,6 @@ def make_metadata(dataset_id: str, config: dict) -> dict:
         column_descriptions[series_config["column"]] = series_config["description"]
 
     return {
-        "id": dataset_id,
         "title": config["title"],
         "description": config["description"],
         "column_descriptions": column_descriptions,
@@ -183,13 +220,46 @@ def run(dataset_filter: str | None = None):
     """
     Transform all datasets defined in the mapping.
 
+    Uses state diff to only process datasets whose underlying series have changed.
+
     Args:
         dataset_filter: If provided, only transform datasets matching this prefix
     """
+    print("Transforming datasets...")
+
+    # Load states
+    ingest_state = load_state("series_data")
+    transform_state = load_state("datasets")
+
+    fetched_series = set(ingest_state.get("fetched_series", []))
+    transformed_series = set(transform_state.get("transformed_series", []))
+    new_series = fetched_series - transformed_series
+
+    if not new_series and not dataset_filter:
+        # Check if any series states have changed (new data for existing series)
+        series_states = ingest_state.get("series_states", {})
+        last_transform_states = transform_state.get("last_series_states", {})
+
+        # Find series with updated last_date
+        changed_series = set()
+        for code, state in series_states.items():
+            prev_state = last_transform_states.get(code, {})
+            if state.get("last_date") != prev_state.get("last_date"):
+                changed_series.add(code)
+
+        if not changed_series:
+            print("  No new or updated series to transform")
+            return
+
+        print(f"  {len(changed_series)} series have new data")
+    else:
+        print(f"  {len(new_series)} new series fetched")
+
+    # Load mapping
     mapping = load_mapping()
     datasets = mapping["datasets"]
 
-    print(f"Processing {len(datasets)} datasets from mapping...")
+    print(f"  Processing {len(datasets)} datasets from mapping...")
 
     success_count = 0
     skip_count = 0
@@ -205,17 +275,23 @@ def run(dataset_filter: str | None = None):
             skip_count += 1
             continue
 
-        # Upload and publish (merge by date to handle incremental updates)
+        # Validate before upload
+        try:
+            test_wide_table(table, dataset_id, config)
+        except AssertionError as e:
+            print(f"    Validation failed for {dataset_id}: {e}")
+            skip_count += 1
+            continue
+
+        # Upload and sync_metadata (merge by date to handle incremental updates)
         upload_data(table, dataset_id, mode="merge", merge_key="date")
-        publish(dataset_id, make_metadata(dataset_id, config))
+        sync_metadata(dataset_id, make_metadata(dataset_id, config))
         success_count += 1
 
-    print(f"\nComplete: {success_count} datasets uploaded, {skip_count} skipped")
+    # Update transform state
+    save_state("datasets", {
+        "transformed_series": sorted(fetched_series),  # All fetched series are now transformed
+        "last_series_states": ingest_state.get("series_states", {}),
+    })
 
-
-if __name__ == "__main__":
-    import sys
-
-    # Allow filtering by dataset prefix: python -m transforms.datasets.main bos_
-    dataset_filter = sys.argv[1] if len(sys.argv) > 1 else None
-    run(dataset_filter)
+    print(f"  Complete: {success_count} datasets uploaded, {skip_count} skipped")
