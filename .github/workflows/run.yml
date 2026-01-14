@@ -30,7 +30,7 @@ jobs:
     - run: uv sync
 
     - name: Run connector
-      run: uv run python -m src.subsets_utils.runner
+      run: PYTHONPATH=src uv run python -m src.main
       env:
         PYTHONUNBUFFERED: 1
         CI: 'true'
