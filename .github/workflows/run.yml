@@ -1,35 +1,44 @@
-name: Run Bank of Canada Integration
-
+name: Run Connector
 on:
   workflow_dispatch:
-  schedule:
-    - cron: '0 22 * * *'  # Run daily at 10 PM UTC (5 PM ET after market close)
+    inputs:
+      dag_target:
+        description: 'Run specific DAG nodes (comma-separated)'
+        required: false
+        type: string
+      dag_on_failure:
+        description: 'Failure behavior: crash (default) or continue'
+        required: false
+        type: string
+        default: 'crash'
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   run:
     runs-on: ubuntu-latest
-    
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-    
-    - name: Set up Python
-      uses: actions/setup-python@v4
+    - uses: actions/checkout@v4
+    - uses: actions/setup-python@v5
       with:
         python-version: '3.11'
-    
-    - name: Install uv
-      run: pip install uv
-    
-    - name: Install dependencies
-      run: uv pip install --system -r pyproject.toml
-    
-    - name: Run integration
+    - uses: astral-sh/setup-uv@v4
+      with:
+        enable-cache: true
+    - run: uv sync
+
+    - name: Run connector
+      run: uv run python -m src.subsets_utils.runner
       env:
+        PYTHONUNBUFFERED: 1
+        CI: 'true'
+        ENABLE_LOGGING: 'true'
+        GITHUB_CONNECTOR_URL: 'https://github.com/nathansnellaert/bank-of-canada'
+        R2_ACCOUNT_ID: ${{ secrets.R2_ACCOUNT_ID }}
         R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
         R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
-        R2_ENDPOINT_URL: ${{ secrets.R2_ENDPOINT_URL }}
         R2_BUCKET_NAME: ${{ secrets.R2_BUCKET_NAME }}
         DAG_TARGET: ${{ inputs.dag_target }}
         DAG_ON_FAILURE: ${{ inputs.dag_on_failure }}
-      run: python main.py
