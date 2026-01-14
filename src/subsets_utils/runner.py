@@ -20,7 +20,7 @@ def main():
     env['PYTHONPATH'] = str(Path.cwd() / 'src')
 
     with open(log_dir / 'output.log', 'w') as f:
-        proc = subprocess.Popen([sys.executable, '-m', 'main'], stdout=f, stderr=subprocess.STDOUT, env=env)
+        proc = subprocess.Popen([sys.executable, '-m', 'src.main'], stdout=f, stderr=subprocess.STDOUT, env=env)
         exit_code = proc.wait()
 
     if exit_code != 0:
