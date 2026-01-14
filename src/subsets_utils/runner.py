@@ -17,7 +17,7 @@ def main():
     log_dir.mkdir(parents=True, exist_ok=True)
 
     env = {**__import__('os').environ, 'LOG_DIR': str(log_dir), 'RUN_ID': run_id}
-    env['PYTHONPATH'] = str(Path.cwd() / 'src')
+    env['PYTHONPATH'] = str(Path.cwd())
 
     with open(log_dir / 'output.log', 'w') as f:
         proc = subprocess.Popen([sys.executable, '-m', 'src.main'], stdout=f, stderr=subprocess.STDOUT, env=env)
