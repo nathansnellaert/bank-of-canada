@@ -1,7 +1,8 @@
 """DuckDB utilities for querying raw data."""
+
+import os
 import duckdb
-from .io import get_raw_path
-from .r2 import _is_cloud_mode, _get_r2_config
+from .config import is_cloud, raw_uri
 
 _configured = False
 
@@ -11,12 +12,12 @@ def _configure():
     global _configured
     if _configured:
         return
-    if _is_cloud_mode():
-        cfg = _get_r2_config()
+
+    if is_cloud():
         duckdb.sql(f"""
-            SET s3_endpoint='{cfg['account_id']}.r2.cloudflarestorage.com';
-            SET s3_access_key_id='{cfg['access_key_id']}';
-            SET s3_secret_access_key='{cfg['secret_access_key']}';
+            SET s3_endpoint='{os.environ['R2_ACCOUNT_ID']}.r2.cloudflarestorage.com';
+            SET s3_access_key_id='{os.environ['R2_ACCESS_KEY_ID']}';
+            SET s3_secret_access_key='{os.environ['R2_SECRET_ACCESS_KEY']}';
             SET s3_region='auto';
         """)
     _configured = True
@@ -34,5 +35,5 @@ def raw(assets: list[str] | str) -> str:
     _configure()
     if isinstance(assets, str):
         assets = [assets]
-    paths = [get_raw_path(a) for a in assets]
+    paths = [raw_uri(a, "parquet") for a in assets]
     return f"read_parquet({paths})"

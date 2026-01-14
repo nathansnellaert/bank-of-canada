@@ -130,3 +130,12 @@ def run():
     test(table)
     upload_data(table, "groups", mode="overwrite")
     print("  Done!")
+
+
+NODES = {
+    run: [],
+}
+
+
+if __name__ == "__main__":
+    run()

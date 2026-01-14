@@ -73,3 +73,12 @@ def run():
     test(table)
     upload_data(table, "series_list", mode="overwrite")
     print("  Done!")
+
+
+NODES = {
+    run: [],
+}
+
+
+if __name__ == "__main__":
+    run()

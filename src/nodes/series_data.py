@@ -200,3 +200,14 @@ def run() -> bool:
 
     print(f"  Updated {updated_count} series, {skipped_count} up to date, {inaccessible_count} inaccessible")
     return False
+
+
+from nodes.series_list import run as series_list_run
+
+NODES = {
+    run: [series_list_run],
+}
+
+
+if __name__ == "__main__":
+    run()

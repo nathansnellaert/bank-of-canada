@@ -3,7 +3,7 @@ import csv
 from datetime import datetime
 from pathlib import Path
 
-from .r2 import _is_cloud_mode
+from .config import is_cloud
 
 _log_dir = None
 _run_timestamp = None
@@ -28,7 +28,7 @@ def _get_log_dir() -> Path:
         # Check for explicit LOG_DIR (set by runner.py)
         if os.environ.get('LOG_DIR'):
             _log_dir = Path(os.environ['LOG_DIR'])
-        elif _is_cloud_mode():
+        elif is_cloud():
             _log_dir = Path("/tmp/logs") / _get_run_timestamp()
         else:
             _log_dir = Path("logs") / _get_run_timestamp()
@@ -86,7 +86,7 @@ def log_data_output(dataset_name, row_count, size_bytes, columns=None, null_coun
 
 def log_run_start():
     # Detect environment (cloud vs local)
-    environment = "cloud" if _is_cloud_mode() else "local"
+    environment = "cloud" if is_cloud() else "local"
 
     # Detect trigger (GitHub sets GITHUB_EVENT_NAME for Actions)
     trigger = os.environ.get('GITHUB_EVENT_NAME', 'manual')
@@ -104,7 +104,7 @@ def log_run_start():
 
 def log_run_end(status="completed", error=None):
     # Detect environment (cloud vs local)
-    environment = "cloud" if _is_cloud_mode() else "local"
+    environment = "cloud" if is_cloud() else "local"
 
     # Detect trigger
     trigger = os.environ.get('GITHUB_EVENT_NAME', 'manual')

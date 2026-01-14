@@ -1,29 +1,3 @@
-"""Simple DAG execution with task tracking.
-
-Usage:
-    from subsets_utils import DAG, load_nodes
-
-    # Manual definition:
-    workflow = DAG({
-        ingest: [],
-        transform: [ingest],
-    })
-
-    # Or dynamic loading from nodes directory:
-    workflow = load_nodes()           # Loads from src/nodes/
-    workflow = load_nodes("my/nodes") # Custom path
-
-    workflow.run()                        # Run all nodes
-    workflow.run(targets=["transform"])   # Run single node (assumes deps ran)
-
-CLI pattern for main.py:
-    if __name__ == "__main__":
-        import argparse
-        parser = argparse.ArgumentParser()
-        parser.add_argument("--target", help="Run specific node")
-        args = parser.parse_args()
-        workflow.run(targets=[args.target] if args.target else None)
-"""
 import importlib.util
 import json
 import os
@@ -33,26 +7,8 @@ import multiprocessing
 from datetime import datetime
 from pathlib import Path
 from typing import Callable
-from contextvars import ContextVar
 
-# Current task context for IO tracking
-_current_task: ContextVar[dict | None] = ContextVar('current_task', default=None)
-
-
-def track_read(asset: str):
-    """Track a read operation. Called by IO functions."""
-    task = _current_task.get()
-    if task is not None:
-        task["reads"].append(asset)
-
-
-def track_write(asset: str, rows: int = None):
-    """Track a write operation. Called by IO functions."""
-    task = _current_task.get()
-    if task is not None:
-        task["writes"].append(asset)
-        if rows:
-            task["rows_written"] = task.get("rows_written", 0) + rows
+from .tracking import set_current_task, get_assets_by_writer, get_reads_by_task, get_io_records, clear_tracking
 
 
 def _get_task_id(fn: Callable) -> str:
@@ -69,20 +25,32 @@ class DAG:
         self.nodes = nodes
         self.state = {}
         self._fn_to_id = {}  # Map function to its ID
+        self._id_to_fn = {}  # Reverse lookup
+        self._dependents = {}  # Reverse graph: node -> list of nodes that depend on it
 
-        # Initialize state for each node
+        # Initialize state and reverse lookup for each node
         for fn in nodes:
             task_id = _get_task_id(fn)
             self._fn_to_id[fn] = task_id
+            self._id_to_fn[task_id] = fn
+            self._dependents[fn] = []
             self.state[task_id] = {
                 "id": task_id,
                 "status": "pending",
-                "reads": [],
-                "writes": [],
             }
 
+        # Build reverse dependency graph
+        for fn, deps in nodes.items():
+            for dep in deps:
+                self._dependents[dep].append(fn)
+
     def _topological_order(self) -> list[Callable]:
-        """Return functions in dependency order."""
+        """Return functions in dependency order.
+
+        Uses DFS-style ordering to run dependent nodes immediately after their
+        dependencies complete. This ensures download→transform pairs run together,
+        freeing disk space before the next download.
+        """
         in_degree = {fn: len(deps) for fn, deps in self.nodes.items()}
         ready = [fn for fn, deg in in_degree.items() if deg == 0]
         order = []
@@ -95,12 +63,51 @@ class DAG:
                 if fn in deps:
                     in_degree[other_fn] -= 1
                     if in_degree[other_fn] == 0:
-                        ready.append(other_fn)
+                        # Insert at FRONT to run dependent immediately (DFS-style)
+                        ready.insert(0, other_fn)
 
         if len(order) != len(self.nodes):
             raise ValueError("Cycle detected in DAG")
 
         return order
+
+    def _cleanup_cache(self, fn: Callable):
+        """Clean up cached files from upstream nodes if all their dependents are done.
+
+        After a node completes, check each of its dependencies. If ALL nodes that
+        depend on that dependency have completed, delete the files it wrote.
+        Also cleans up the current node if it has no dependents (leaf node).
+        """
+        from .config import is_cloud, cache_path
+
+        if not is_cloud():
+            return
+
+        # Clean up dependencies if all their dependents are done
+        for dep in self.nodes[fn]:
+            dep_id = self._fn_to_id[dep]
+            dependents = self._dependents[dep]
+
+            all_done = all(
+                self.state[self._fn_to_id[d]]["status"] in ("done", "failed", "skipped")
+                for d in dependents
+            )
+
+            if all_done:
+                for asset_path in get_assets_by_writer(dep_id):
+                    cache_file = Path(cache_path(asset_path))
+                    if cache_file.exists():
+                        cache_file.unlink()
+                        print(f"[DAG] Cleaned up cache: {asset_path}")
+
+        # Clean up current node if it has no dependents (leaf node)
+        if not self._dependents[fn]:
+            fn_id = self._fn_to_id[fn]
+            for asset_path in get_assets_by_writer(fn_id):
+                cache_file = Path(cache_path(asset_path))
+                if cache_file.exists():
+                    cache_file.unlink()
+                    print(f"[DAG] Cleaned up cache (leaf): {asset_path}")
 
     def _run_task(self, fn: Callable, isolate: bool = False) -> dict:
         """Run a single task, optionally in subprocess for memory isolation."""
@@ -117,7 +124,7 @@ class DAG:
     def _run_inline(self, fn: Callable, task_state: dict) -> dict:
         """Run task in current process."""
         # Set context for IO tracking
-        _current_task.set(task_state)
+        set_current_task(task_state["id"])
 
         try:
             fn()
@@ -131,25 +138,20 @@ class DAG:
             started = datetime.fromisoformat(task_state["started_at"])
             finished = datetime.fromisoformat(task_state["finished_at"])
             task_state["duration_s"] = (finished - started).total_seconds()
-            _current_task.set(None)
+            set_current_task(None)
 
         return task_state
 
     def _run_in_subprocess(self, fn: Callable, task_state: dict) -> dict:
         """Run task in subprocess for memory isolation."""
-        def worker(fn, queue):
+        def worker(fn, task_id, queue):
             # Re-setup context in subprocess
-            local_state = {"reads": [], "writes": [], "rows_written": 0}
-            _current_task.set(local_state)
+            from .tracking import set_current_task
+            set_current_task(task_id)
 
             try:
                 fn()
-                queue.put({
-                    "status": "done",
-                    "reads": local_state["reads"],
-                    "writes": local_state["writes"],
-                    "rows_written": local_state.get("rows_written", 0),
-                })
+                queue.put({"status": "done"})
             except Exception as e:
                 queue.put({
                     "status": "failed",
@@ -158,7 +160,7 @@ class DAG:
                 })
 
         queue = multiprocessing.Queue()
-        proc = multiprocessing.Process(target=worker, args=(fn, queue))
+        proc = multiprocessing.Process(target=worker, args=(fn, task_state["id"], queue))
         proc.start()
         proc.join()
 
@@ -182,6 +184,9 @@ class DAG:
             DAG_TARGET: Comma-separated node names to run (overrides targets arg)
             DAG_ON_FAILURE: "crash" (default) or "continue"
         """
+        # Reset tracking state for fresh run
+        clear_tracking()
+
         # Env var overrides targets arg
         env_targets = os.environ.get("DAG_TARGET")
         if env_targets:
@@ -217,6 +222,7 @@ class DAG:
             print(f"[DAG] Running {task_id}...")
             result = self._run_task(fn, isolate=isolate)
             self.save_state()  # Implicit checkpoint after each node
+            self._cleanup_cache(fn)  # Free disk space from completed upstream nodes
 
             if result["status"] == "done":
                 print(f"[DAG] {task_id} done ({result['duration_s']:.1f}s)")
@@ -229,8 +235,31 @@ class DAG:
 
     def to_json(self) -> dict:
         """Export DAG structure and execution state."""
+        # Enrich node state with categorized reads/writes
+        nodes_with_io = []
+        for node_state in self.state.values():
+            task_id = node_state["id"]
+            writes = get_assets_by_writer(task_id)
+            reads = get_reads_by_task(task_id)
+
+            # Categorize writes by path prefix
+            raw_writes = [w for w in writes if w.startswith("raw/") or "/raw/" in w]
+            materializations = [w.replace("subsets/", "") for w in writes if w.startswith("subsets/")]
+
+            # Categorize reads by path prefix
+            raw_reads = [r for r in reads if r.startswith("raw/") or "/raw/" in r]
+            subsets_reads = [r.replace("subsets/", "") for r in reads if r.startswith("subsets/")]
+
+            nodes_with_io.append({
+                **node_state,
+                "raw_reads": raw_reads,
+                "raw_writes": raw_writes,
+                "subsets_reads": subsets_reads,
+                "materializations": materializations,
+            })
+
         return {
-            "nodes": list(self.state.values()),
+            "nodes": nodes_with_io,
             "edges": [
                 {"from": self._fn_to_id[dep], "to": self._fn_to_id[fn]}
                 for fn, deps in self.nodes.items()
@@ -240,6 +269,7 @@ class DAG:
             "total_duration_s": sum(
                 n.get("duration_s", 0) for n in self.state.values()
             ),
+            "io_trace": get_io_records(),  # Full IO trace with stacks for debugging
         }
 
     def _overall_status(self) -> str:
@@ -262,18 +292,6 @@ class DAG:
 
 
 def load_nodes(nodes_dir: Path | str | None = None) -> DAG:
-    """Discover nodes from directory and return a DAG ready to run.
-
-    Scans the nodes directory for .py files, loads each module dynamically,
-    and collects their NODES dicts (download -> transform mappings).
-    Returns a DAG with download -> transform dependencies.
-
-    Args:
-        nodes_dir: Path to nodes directory. Defaults to src/nodes relative to cwd.
-
-    Returns:
-        DAG instance ready to .run()
-    """
     if nodes_dir is None:
         nodes_dir = Path.cwd() / "src" / "nodes"
     elif isinstance(nodes_dir, str):
@@ -287,7 +305,6 @@ def load_nodes(nodes_dir: Path | str | None = None) -> DAG:
         print(f"Warning: nodes directory not found: {nodes_dir}")
         return DAG(all_nodes)
 
-    # Find all .py files in nodes directory (not __init__.py, not _prefixed)
     node_files = sorted(nodes_dir.glob("*.py"))
 
     for node_file in node_files:
@@ -297,28 +314,31 @@ def load_nodes(nodes_dir: Path | str | None = None) -> DAG:
         module_name = f"nodes.{node_file.stem}"
 
         try:
-            # Load module dynamically
-            spec = importlib.util.spec_from_file_location(module_name, node_file)
-            if spec is None or spec.loader is None:
-                print(f"Warning: Could not load spec for {node_file}")
-                continue
+            # Check if module was already loaded (e.g., imported by another node)
+            if module_name in sys.modules:
+                module = sys.modules[module_name]
+            else:
+                # Load module dynamically
+                spec = importlib.util.spec_from_file_location(module_name, node_file)
+                if spec is None or spec.loader is None:
+                    print(f"Warning: Could not load spec for {node_file}")
+                    continue
 
-            module = importlib.util.module_from_spec(spec)
-            sys.modules[module_name] = module
-            spec.loader.exec_module(module)
+                module = importlib.util.module_from_spec(spec)
+                sys.modules[module_name] = module
+                spec.loader.exec_module(module)
 
             # Extract NODES dict if present
             if hasattr(module, "NODES"):
                 nodes_dict = getattr(module, "NODES")
                 if isinstance(nodes_dict, dict):
-                    # Convert {download: transform} to DAG format
-                    for download_fn, transform_fn in nodes_dict.items():
-                        all_nodes[download_fn] = []
-                        all_nodes[transform_fn] = [download_fn]
+                    # Format: {fn: [deps]} - direct pass to DAG
+                    for fn, deps in nodes_dict.items():
+                        all_nodes[fn] = deps
 
         except Exception as e:
             print(f"Error loading {node_file.name}: {e}")
             raise
 
-    print(f"Loaded {len(all_nodes) // 2} nodes")
+    print(f"Loaded {len(all_nodes)} nodes")
     return DAG(all_nodes)

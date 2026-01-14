@@ -13,11 +13,9 @@ import re
 import pyarrow as pa
 from pathlib import Path
 from collections import defaultdict
-from subsets_utils import load_raw_json, load_state, save_state, upload_data, sync_metadata, validate
-
+from subsets_utils import load_raw_json, load_state, save_state, upload_data, validate
 
 MAPPINGS_DIR = Path(__file__).parent.parent / "mappings"
-
 
 def normalize_date(date: str, frequency: str) -> str:
     """
@@ -54,13 +52,11 @@ def normalize_date(date: str, frequency: str) -> str:
     # Already in correct format or unknown - return as-is
     return date
 
-
 def load_mapping() -> dict:
     """Load the dataset mapping configuration."""
     mapping_path = MAPPINGS_DIR / "datasets.json"
     with open(mapping_path) as f:
         return json.load(f)
-
 
 def load_raw_series(series_code: str) -> list[dict]:
     """Load raw data for a single series."""
@@ -68,7 +64,6 @@ def load_raw_series(series_code: str) -> list[dict]:
         return load_raw_json(f"series/{series_code}")
     except FileNotFoundError:
         return []
-
 
 def test_wide_table(table: pa.Table, dataset_id: str, config: dict) -> None:
     """Validate a wide-format dataset."""
@@ -121,7 +116,6 @@ def test_wide_table(table: pa.Table, dataset_id: str, config: dict) -> None:
             break
 
     assert has_data, f"Dataset {dataset_id} has no data in any column"
-
 
 def transform_dataset(dataset_id: str, config: dict) -> pa.Table | None:
     """
@@ -201,7 +195,6 @@ def transform_dataset(dataset_id: str, config: dict) -> pa.Table | None:
 
     return table
 
-
 def make_metadata(dataset_id: str, config: dict) -> dict:
     """Generate metadata for a dataset."""
     column_descriptions = {"date": "Observation date"}
@@ -214,7 +207,6 @@ def make_metadata(dataset_id: str, config: dict) -> dict:
         "description": config["description"],
         "column_descriptions": column_descriptions,
     }
-
 
 def run(dataset_filter: str | None = None):
     """
@@ -283,9 +275,8 @@ def run(dataset_filter: str | None = None):
             skip_count += 1
             continue
 
-        # Upload and sync_metadata (merge by date to handle incremental updates)
+        # Upload (merge by date to handle incremental updates)
         upload_data(table, dataset_id, mode="merge", merge_key="date")
-        sync_metadata(dataset_id, make_metadata(dataset_id, config))
         success_count += 1
 
     # Update transform state
@@ -295,3 +286,12 @@ def run(dataset_filter: str | None = None):
     })
 
     print(f"  Complete: {success_count} datasets uploaded, {skip_count} skipped")
+
+from nodes.series_data import run as series_data_run
+
+NODES = {
+    run: [series_data_run],
+}
+
+if __name__ == "__main__":
+    run()
