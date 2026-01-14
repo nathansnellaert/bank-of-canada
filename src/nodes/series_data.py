@@ -13,12 +13,15 @@ State tracks:
 import csv
 import io
 import time
+import httpx
 from datetime import datetime, timedelta
 from tqdm import tqdm
 from subsets_utils import get, load_raw_file, load_raw_json, save_raw_json, load_state, save_state
 
 
 GH_ACTIONS_MAX_RUN_SECONDS = 5.5 * 60 * 60
+MAX_RETRIES = 3
+INITIAL_TIMEOUT = 60.0
 
 
 def parse_series_csv(csv_text: str) -> list[dict]:
@@ -49,44 +52,56 @@ def convert_quarterly_to_iso(date_str: str) -> str:
 
 
 def fetch_series_observations(series_code: str, start_date: str) -> list | None:
-    """Fetch observations for a series. Returns None if the series is inaccessible."""
+    """Fetch observations for a series with retry logic. Returns None if the series is inaccessible."""
     url = f"https://www.bankofcanada.ca/valet/observations/{series_code}/csv"
     api_start_date = convert_quarterly_to_iso(start_date)
     params = {"start_date": api_start_date}
 
-    response = get(url, params=params, timeout=30.0)
+    last_error = None
+    for attempt in range(MAX_RETRIES):
+        try:
+            timeout = INITIAL_TIMEOUT * (1.5 ** attempt)  # Exponential backoff: 60s, 90s, 135s
+            response = get(url, params=params, timeout=timeout)
 
-    # Handle API errors gracefully - some series may be restricted or unavailable
-    if response.status_code == 403:
-        return None  # Series is forbidden/restricted
-    if response.status_code == 404:
-        return None  # Series doesn't exist
-    response.raise_for_status()
+            # Handle API errors gracefully - some series may be restricted or unavailable
+            if response.status_code == 403:
+                return None  # Series is forbidden/restricted
+            if response.status_code == 404:
+                return None  # Series doesn't exist
+            response.raise_for_status()
 
-    lines = response.text.split('\n')
+            lines = response.text.split('\n')
 
-    obs_start = -1
-    for i, line in enumerate(lines):
-        if '"OBSERVATIONS"' in line:
-            obs_start = i + 1
-            break
+            obs_start = -1
+            for i, line in enumerate(lines):
+                if '"OBSERVATIONS"' in line:
+                    obs_start = i + 1
+                    break
 
-    if obs_start == -1:
-        return []
+            if obs_start == -1:
+                return []
 
-    obs_lines = '\n'.join(lines[obs_start:])
-    reader = csv.DictReader(io.StringIO(obs_lines))
+            obs_lines = '\n'.join(lines[obs_start:])
+            reader = csv.DictReader(io.StringIO(obs_lines))
 
-    observations = []
-    for row in reader:
-        if 'date' in row and series_code in row:
-            observations.append({
-                "date": row['date'],
-                "series_code": series_code,
-                "value": row[series_code]
-            })
+            observations = []
+            for row in reader:
+                if 'date' in row and series_code in row:
+                    observations.append({
+                        "date": row['date'],
+                        "series_code": series_code,
+                        "value": row[series_code]
+                    })
 
-    return observations
+            return observations
+
+        except (httpx.TimeoutException, httpx.ReadTimeout) as e:
+            last_error = e
+            if attempt < MAX_RETRIES - 1:
+                wait_time = 2 ** attempt  # Exponential backoff: 1s, 2s, 4s
+                time.sleep(wait_time)
+                continue
+            raise  # Re-raise on final attempt
 
 
 def load_series_data(series_code: str) -> list:

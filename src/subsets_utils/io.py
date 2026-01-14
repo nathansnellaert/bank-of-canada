@@ -496,6 +496,10 @@ def save_raw_parquet(data: pa.Table, asset_id: str, metadata: dict = None) -> st
     """Save raw PyArrow table as Parquet."""
     from .tracking import record_write
 
+    # Handle RecordBatchReader by reading into a Table
+    if hasattr(data, 'read_all'):
+        data = data.read_all()
+
     if metadata:
         existing = data.schema.metadata or {}
         existing[b'asset_metadata'] = json.dumps(metadata).encode('utf-8')
