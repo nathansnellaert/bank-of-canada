@@ -1,0 +1,9 @@
+{
+  "id": "bank_of_canada",
+  "name": "Bank of Canada",
+  "description": "Canada's central bank providing financial and economic data including foreign exchange rates, interest rates, CPI, monetary aggregates, and economic indicators through the Valet API",
+  "url": "https://www.bankofcanada.ca",
+  "logo": "https://www.bankofcanada.ca/wp-content/uploads/2018/10/boc-logo-apple-touch-icon.png",
+  "terms_of_use": "https://www.bankofcanada.ca/terms/",
+  "source_type": "government"
+}
