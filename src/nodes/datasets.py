@@ -203,8 +203,10 @@ def make_metadata(dataset_id: str, config: dict) -> dict:
         column_descriptions[series_config["column"]] = series_config["description"]
 
     return {
+        "id": dataset_id,
         "title": config["title"],
         "description": config["description"],
+        "license": "Bank of Canada Terms of Use",
         "column_descriptions": column_descriptions,
     }
 

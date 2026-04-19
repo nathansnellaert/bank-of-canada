@@ -461,40 +461,42 @@ def overwrite(
 
 
 def append(
-    table: pa.Table,
+    source: Union[pa.Table, pa.RecordBatchReader],
     name: str,
     *,
     partition_by: list[str] = None
-) -> str:
+) -> "WriteResult":
     """Append data to a Delta table.
 
     WARNING: No deduplication! Use ONLY for:
     - Immutable events (audit logs, raw API responses)
     - Data where duplicates are impossible by design
+    - Chunked loads into an already-partitioned table where each chunk's
+      partition keys are disjoint from previously-written chunks
 
     Always use partition_by for cleanup capability.
 
-    Args:
-        table: PyArrow table to write
-        name: Dataset name
-        partition_by: Columns to partition by (strongly recommended)
-
-    Returns:
-        Delta table URI
+    Accepts pa.Table or pa.RecordBatchReader. Readers stream through
+    deltalake without materializing in memory — use for chunked loads
+    (e.g. per-partition dedup) driven by DuckDB's fetch_record_batch().
     """
-    if len(table) == 0:
+    is_reader = isinstance(source, pa.RecordBatchReader)
+
+    if not is_reader and len(source) == 0:
         print(f"[append] {name}: no data to write")
         return None
 
     if partition_by is None:
         print(f"⚠️  Warning: append() without partition_by makes cleanup difficult")
 
+    schema = source.schema
+
     uri = _get_uri(name)
     opts = _get_opts()
 
     write_deltalake(
         uri,
-        table,
+        source,
         mode="append",
         partition_by=partition_by,
         storage_options=opts,
@@ -504,8 +506,9 @@ def append(
 
     dt = DeltaTable(uri, storage_options=opts)
     version = dt.version()
-    h = data_hash(table)
+    new_count = _target_row_count(dt)
+    h = _source_hash(source, schema, new_count)
 
-    _log_write(name, table, "append")
+    _log_write_meta(name, schema, new_count, "append")
     record_write(f"subsets/{name}", version=version, hash=h)
-    return WriteResult(uri=uri, version=version, hash=h, rows=len(table))
+    return WriteResult(uri=uri, version=version, hash=h, rows=new_count)
