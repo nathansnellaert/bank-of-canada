@@ -16,6 +16,7 @@ METADATA = {
     "id": DATASET_ID,
     "title": "Bank of Canada Series List",
     "description": "Complete list of available data series from the Bank of Canada Valet API.",
+    "license": "Bank of Canada Terms of Use",
     "column_descriptions": {
         "name": "Unique series identifier code",
         "label": "Human-readable series name",

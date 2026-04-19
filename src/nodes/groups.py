@@ -18,6 +18,7 @@ METADATA = {
     "id": DATASET_ID,
     "title": "Bank of Canada Groups",
     "description": "Group-to-series mapping from the Bank of Canada Valet API, listing all data groups and their associated series.",
+    "license": "Bank of Canada Terms of Use",
     "column_descriptions": {
         "group_id": "Unique identifier for the data group",
         "group_label": "Human-readable label for the group",
