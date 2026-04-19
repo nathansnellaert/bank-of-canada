@@ -144,7 +144,7 @@ def run():
     print(f"  {len(records)} group-series mappings")
 
     test(table)
-    merge(table, DATASET_ID, key=["group_id", "group_label", "group_description", "series_id", "series_label", "series_link"])
+    merge(table, DATASET_ID, key=["group_id", "series_id"])
     publish(DATASET_ID, METADATA)
     print("  Done!")
 

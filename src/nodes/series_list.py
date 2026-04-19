@@ -85,7 +85,7 @@ def run():
     print(f"  {len(series_data)} series")
 
     test(table)
-    merge(table, DATASET_ID, key=["name", "label", "description", "link"])
+    merge(table, DATASET_ID, key="name")
     publish(DATASET_ID, METADATA)
     print("  Done!")
 
